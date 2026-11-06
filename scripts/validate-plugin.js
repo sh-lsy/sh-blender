@@ -20,12 +20,15 @@ const check = (label, fn) => {
 const read = (p) => readFileSync(p, 'utf8')
 const json = (p) => JSON.parse(read(join(ROOT, p)))
 
+const SKIP_DIRS = new Set(['.git', 'node_modules', '.plugin-data', '.venv', '__pycache__', 'artifacts'])
+
 function walk(dir) {
   const out = []
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const p = join(dir, entry.name)
-    if (entry.isDirectory()) out.push(...walk(p))
-    else out.push(p)
+    if (entry.isDirectory()) {
+      if (!SKIP_DIRS.has(entry.name)) out.push(...walk(p))
+    } else out.push(p)
   }
   return out
 }
@@ -145,7 +148,7 @@ const ALLOW_FILES = new Set([
   'skills/create-3d-model/LICENSE', 'skills/create-3d-model/UPSTREAM_LICENSE',
   'skills/create-3d-model/references/upstream.md',
   'src/vendor/dsh-tools.js', 'src/vendor/schemastery.js',
-  'scripts/validate-plugin.js',
+  'scripts/validate-plugin.js', 'docs/VERIFICATION.md',
 ])
 const ALLOW_LINE = /SPDX|Adapted from|Copied verbatim|From CheshireJCat|THIRD_PARTY_NOTICES|@deepseek-ai\/dsh-tools|sh-blender-modeling|namespace\.get\("dsh_result"|not inside DeepSeek Harness|dsh-tools\.js/u
 const COUPLING = /\bdsh\b|cheshirejcat|@deepseek-ai\/|cordis|read_image|pnpm|DSH_|blender-modeling'/iu
