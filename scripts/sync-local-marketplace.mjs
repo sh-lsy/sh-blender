@@ -50,6 +50,9 @@ const LOCAL_MARKET_MANIFEST = JSON.stringify({
 const tracked = execFileSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], { cwd: ROOT, encoding: 'utf8' })
   .split('\0')
   .filter(Boolean)
+  // Workspace-local agent state (memory logs) is git-tracked for the project but
+  // must never ship inside the marketplace snapshot.
+  .filter((file) => !file.startsWith('.workbuddy/'))
 
 mkdirSync(join(MARKET_ROOT, '.codebuddy-plugin'), { recursive: true })
 mkdirSync(PLUGIN_DIR, { recursive: true })
@@ -81,6 +84,17 @@ for (const existing of listFiles(PLUGIN_DIR)) {
   }
 }
 writeFileSync(join(MARKET_ROOT, '.codebuddy-plugin/marketplace.json'), LOCAL_MARKET_MANIFEST)
+
+// Pruning files leaves empty directories behind; drop them so the snapshot has
+// no residue of workspace-local agent state.
+function pruneEmptyDirs(dir) {
+  if (!existsSync(dir)) return
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory()) pruneEmptyDirs(join(dir, entry.name))
+  }
+  if (dir !== PLUGIN_DIR && readdirSync(dir).length === 0) rmSync(dir, { recursive: true, force: true })
+}
+pruneEmptyDirs(PLUGIN_DIR)
 
 // Fail fast if the marketplace entry cannot be resolved.
 const entry = JSON.parse(readFileSync(join(MARKET_ROOT, '.codebuddy-plugin/marketplace.json'), 'utf8')).plugins[0]

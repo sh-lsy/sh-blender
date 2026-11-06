@@ -10,7 +10,7 @@ import { createToolRegistry } from '../src/tools.js'
 import { HELPER_CATALOG } from '../src/helper-catalog.js'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const SKILL_ROOT = join(ROOT, 'skills', 'create-3d-model')
+const SKILL_ROOT = join(ROOT, 'skills', 'sh-blender')
 const failures = []
 const notes = []
 const check = (label, fn) => {
@@ -43,10 +43,10 @@ const required = [
   'src/vendor/dsh-tools.js', 'src/vendor/schemastery.js',
   'scripts/sh_blender_driver.py', 'scripts/sh_blender_helper_driver.py',
   'scripts/setup-analysis.js', 'bin/sh-blender', 'bin/sh-blender.cmd',
-  'skills/create-3d-model/SKILL.md', 'skills/create-3d-model/LICENSE',
-  'skills/create-3d-model/UPSTREAM_LICENSE',
-  'skills/create-3d-model/references/integration.md',
-  'skills/create-3d-model/references/upstream.md',
+  'skills/sh-blender/SKILL.md', 'skills/sh-blender/LICENSE',
+  'skills/sh-blender/UPSTREAM_LICENSE',
+  'skills/sh-blender/references/integration.md',
+  'skills/sh-blender/references/upstream.md',
 ]
 check('required files present', () => {
   const missing = required.filter((p) => !existsSync(join(ROOT, p)))
@@ -117,7 +117,7 @@ check('top-level SKILL.md frontmatter', () => {
   assert.ok(m, 'missing frontmatter')
   const name = /^name:\s*(.+)$/mu.exec(m[1])?.[1]?.trim()
   const description = /^description:\s*(.+)$/mu.exec(m[1])?.[1]?.trim()
-  assert.equal(name, 'create-3d-model')
+  assert.equal(name, 'sh-blender')
   assert.match(name, /^[a-z0-9-]+$/u)
   assert.ok(description && description.length > 20, 'description too short')
   assert.ok(!description.includes('<') && !description.includes('>'), 'description contains angle brackets')
@@ -145,8 +145,8 @@ check('three upstream copyright notices preserved', () => {
 const ALLOW_FILES = new Set([
   'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES.md', 'CHANGELOG.md',
   'README.md', 'README.zh-CN.md',
-  'skills/create-3d-model/LICENSE', 'skills/create-3d-model/UPSTREAM_LICENSE',
-  'skills/create-3d-model/references/upstream.md',
+  'skills/sh-blender/LICENSE', 'skills/sh-blender/UPSTREAM_LICENSE',
+  'skills/sh-blender/references/upstream.md',
   'src/vendor/dsh-tools.js', 'src/vendor/schemastery.js',
   'scripts/validate-plugin.js', 'docs/VERIFICATION.md',
 ])

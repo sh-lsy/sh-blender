@@ -16,7 +16,7 @@
 | 运行时第三方依赖 | 0 | 仅用 Node 内置模块，插件安装时无需 `npm install` |
 
 29 个模块文档位于
-`skills/create-3d-model/references/modules/<名称>/MODULE.md`，通过
+`skills/sh-blender/references/modules/<名称>/MODULE.md`，通过
 `@references/modules/<名称>/MODULE.md` 按需读取。只注册 1 个自动触发技能，避免
 30 条元数据常驻上下文，同时保留全部 30 份内容。
 
@@ -59,8 +59,8 @@ node scripts/desktop-plugin.mjs
 **怎么确认装好了** —— 别去「技能」页找卡片，直接试能力：
 
 - 让 Agent 调用 `blender_status`（正常会返回 Blender 5.2.2 LTS）。
-- 或运行 `/create-3d-model` 提一个建模需求。**技能名是 `create-3d-model`，
-  不含 "sh"**，所以在 `/` 列表里搜 `/sh` 是搜不到的。
+- 或运行 `/sh-blender:sh-blender` 提一个建模需求。**技能名就是 `sh-blender`**，
+  在 `/` 列表里搜 `/sh` 直接能找到。
 - `node scripts/desktop-plugin.mjs --status` 查看注册状态。
 - 看日志 `~/.workbuddy/logs/2026-11-06/workbuddyMainThread__*.log` 里
   `servers=N` 是否增加、有无 `skipping MCP server "sh-blender"` 警告。
@@ -145,7 +145,7 @@ sh-blender setup-analysis
 
 ## 使用
 
-调用 `/sh-blender:create-3d-model`（或直接提出建模需求）。编排技能会读取
+调用 `/sh-blender:sh-blender`（或直接提出建模需求）。编排技能会读取
 `references/integration.md`，选择最小模块集，并调用 `blender_*` MCP 工具。
 
 CLI 兜底（插件启用时 `bin/sh-blender` 会加入 shell PATH）：
@@ -164,7 +164,7 @@ sh-blender mcp-selftest
 `blender_render_frames` · `blender_export` · `blender_validate_scene` ·
 `blender_validate_export` · `blender_helper_catalog` · `blender_helper_run`
 
-完整映射表见 `skills/create-3d-model/references/integration.md`。
+完整映射表见 `skills/sh-blender/references/integration.md`。
 
 ## 安全边界
 

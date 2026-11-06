@@ -1,6 +1,6 @@
 {
   "name": "sh-blender",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "sh-lsy 维护的 Blender 3D 建模、重建、渲染、验证与导出插件（30 skills / 26 helpers / 13 tools）",
   "author": {
     "name": "sh-lsy",

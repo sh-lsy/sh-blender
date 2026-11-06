@@ -193,7 +193,7 @@ const check = {
   manifest: existsSync(join(CACHE, '.codebuddy-plugin/plugin.json')),
   mcpConfig: existsSync(join(CACHE, '.mcp.json')),
   mcpServer: existsSync(join(CACHE, 'mcp/server.mjs')),
-  skill: existsSync(join(CACHE, 'skills/create-3d-model/SKILL.md')),
+  skill: existsSync(join(CACHE, 'skills/sh-blender/SKILL.md')),
 }
 console.log('verify:', JSON.stringify(check))
 if (Object.values(check).some((v) => v !== true)) throw new Error('registration incomplete')
@@ -203,6 +203,6 @@ Done. sh-blender ${version} is registered as installed + enabled.
 Next: fully quit WorkBuddy and start it again (or try /reload-plugins in chat).
 The "专家·技能·连接器 → 技能" page shows the SkillHub skill market; a native
 plugin does not appear as a card there. The installed skill is named
-"create-3d-model" (not "sh-blender"), so search for /create-3d-model or just
-ask the agent to build a 3D model. Also verify the blender_status MCP tool.
+"sh-blender", so the slash command is /sh-blender:sh-blender — or just ask the
+agent to build a 3D model. Also verify the blender_status MCP tool.
 `)

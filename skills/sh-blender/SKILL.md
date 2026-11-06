@@ -1,9 +1,9 @@
 ---
-name: create-3d-model
-description: 从文本、参考图、线框、正交多视图、贴图模板或已有 3D 资产创建并验证可移植 3D 模型；通过 sh-blender 插件的 blender_* MCP 工具驱动 Blender 后台进程。当用户要求建模、重建、材质 UV、绑定动画、视觉验证或导出 GLB/glTF/FBX/OBJ/USD/STL 时使用。Create and refine portable 3D models with the sh-blender MCP tools and Blender.
+name: sh-blender
+description: Blender 3D 建模与生产编排 —— 从文本、参考图、线框、正交多视图、贴图模板或已有 3D 资产创建并验证可移植 3D 模型；通过 sh-blender 插件的 blender_* MCP 工具驱动 Blender 后台进程。当用户要求建模、重建、材质 UV、绑定动画、视觉验证或导出 GLB/glTF/FBX/OBJ/USD/STL 时使用。Create and refine portable 3D models with the sh-blender MCP tools and Blender.
 ---
 
-# Create 3D Model
+# sh-blender — 3D production orchestrator
 
 ## WorkBuddy runtime mapping
 

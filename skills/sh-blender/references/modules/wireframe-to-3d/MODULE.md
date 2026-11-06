@@ -74,7 +74,7 @@ For repeated motif subjects, create exactly the primary structural components de
 Run the bundled analyzer once per view:
 
 ```bash
-python3 /absolute/path/to/create-3d-model/references/modules/wireframe-to-3d/scripts/wireframe_analyzer.py \
+python3 /absolute/path/to/sh-blender/references/modules/wireframe-to-3d/scripts/wireframe_analyzer.py \
   /absolute/workspace/path/input.png \
   /absolute/workspace/path/output.json
 ```
@@ -300,4 +300,4 @@ For a "complete rendered and textured X" (e.g. Ray-Ban Aviator from a wireframe)
 
 Treat wireframe extraction as the structural first pass, not the presentation result. Validate the current task with local before/after renders: the trace should establish the outline, while the chained modeling, material, lighting, and camera passes should produce the finished asset.
 
-**The orchestrator (`create-3d-model`) should always plan for the chain** when the user asks for a "model of X" from a wireframe.
+**The orchestrator (`sh-blender`) should always plan for the chain** when the user asks for a "model of X" from a wireframe.

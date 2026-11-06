@@ -29,7 +29,7 @@ results are inherited or claimed here.
 | V6 | `RUN_HELPER_TESTS=1 node --test test/helpers.integration.test.js` | **PASS** | 23 default / 26 with `enableMaintenanceHelpers`, maintenance helper blocked by default, `wireframe-analyzer` on a 64×64 PGM produced 2 contours and a JSON report |
 | V7 | Windows / Unicode paths | **PASS** | Ad-hoc run in workspace `sh-blender 中文 空格 😀`: created `.blend` (94 590 B), preview PNG (18 255 B), `.glb` (1 740 B), helper JSON (1 348 B); Chinese filenames at every stage, including OpenCV-based helper — upstream v0.2.4 Unicode fix retained |
 | V8 | CLI fallback | **PASS** | `sh-blender info`, `list-tools` (13), `status`, `mcp-selftest`, and `blender_helper_catalog --json '{}'` (23 helpers) all returned the same structured results as MCP |
-| V9 | **WorkBuddy desktop integration** | **PASS (host-confirmed)** | After fixing the `.mcp.json` placeholder bug (see "MCP skip root cause"), the desktop's own catalog scan at 15:26:37 reported `servers=4 -> 5` with no skip warning; `MCP-Reconcile fresh=[custom-mcp:sh-blender]` and `MCP-ControllerState state=ready` (219 ms). `mcp-tool-list.json` was rewritten at 15:26:37 and now lists all 13 `blender_*` tools. A raw handshake against the installed `1.0.3` cache returned `initialize`, 13 tools and `ping`. The installed skill is named `create-3d-model`, so searching `/sh` in the slash menu will not find it. |
+| V9 | **WorkBuddy desktop integration** | **PASS (host-confirmed)** | After fixing the `.mcp.json` placeholder bug (see "MCP skip root cause"), the desktop's own catalog scan at 15:26:37 reported `servers=4 -> 5` with no skip warning; `MCP-Reconcile fresh=[custom-mcp:sh-blender]` and `MCP-ControllerState state=ready` (219 ms). `mcp-tool-list.json` was rewritten at 15:26:37 and now lists all 13 `blender_*` tools. A raw handshake against the installed `1.0.3` cache returned `initialize`, 13 tools and `ping`. The skill was renamed from `create-3d-model` to `sh-blender` in 1.0.4 so the slash menu matches `/sh`. |
 | V10 | Security | **PASS** | V2 asserts `../` traversal and symlink escape are rejected; V5 asserts traversal rejection. Runtime always passes `--disable-autoexec`, uses one fresh Blender process per call, denies overwrite by default, and removes temporary payload/result directories |
 | V11 | Compliance | **PASS** | Root `LICENSE` (© 2026 SH), `skills/.../LICENSE` (© 2026 CheshireJCat), `UPSTREAM_LICENSE` (© 2026 RobLe3), `NOTICE`, and `THIRD_PARTY_NOTICES.md` with the three MIT texts in full. No claim of inheriting upstream verification results |
 | V12 | Install / version refresh | **PASS (version half)** | A real `--bump patch` run advanced `1.0.2 -> 1.0.3` across all three manifests, wrote a new versioned cache and repointed `installed_plugins.json`; the desktop picked it up at its next ~10-minute catalog scan **without a restart**. Uninstall / reinstall through the UI remains a manual check |
@@ -65,6 +65,25 @@ kept it), yet `installed_plugins.json` had no `sh-blender` entry and no
 `scripts/desktop-plugin.mjs` writes all four, idempotently, with
 `*.bak-sh-blender` backups. `--status` prints the state; `--bump patch|minor|major`
 bumps the three version files and installs into a new versioned cache directory.
+
+### Installed-side runtime paths
+
+When the desktop loads the plugin from its cache, the host substitutes
+`${CODEBUDDY_PLUGIN_DATA}` with its own data directory
+(`~/.workbuddy/plugins/data/sh-blender-sh-lsy-plugins`), **not** the project's
+`D:\sy\sh-blender\.plugin-data`. The analysis runtime therefore has to exist on
+that path:
+
+```bash
+SH_BLENDER_DATA="C:/Users/SH/.workbuddy/plugins/data/sh-blender-sh-lsy-plugins" \
+  node scripts/setup-analysis.js
+```
+
+Without it `blender_status.analysis.available` reports `false` and every Python
+helper is unavailable, even though the project-side `.venv` is healthy. This was
+the state during the first installed run; after creating the host-side venv the
+same `blender_status` call reported Python 3.13.14 with opencv 4.12.0,
+numpy 2.2.6, Pillow 12.0.0 and scipy 1.16.3.
 
 ### Verified state after direct registration
 
@@ -106,14 +125,16 @@ workspace from `CODEBUDDY_PROJECT_DIR` / `process.cwd()`;
 
 ### Why the slash menu seemed empty
 
-The installed skill is `create-3d-model` (the plugin is `sh-blender`). Searching
-`/sh` in the menu cannot match it. Per the official skills documentation,
-plugin-provided skills appear under `/skills` as "Plugin skills" and are marked
-`locked by plugin`; they are not cards in the SkillHub market page.
+The skill was originally named `create-3d-model` (the plugin is `sh-blender`),
+so searching `/sh` in the menu could not match it. It is now named `sh-blender`
+along with its directory, so `/sh-blender:sh-blender` resolves and `/sh` matches.
+Per the official skills documentation, plugin-provided skills appear under
+`/skills` as "Plugin skills" and are marked `locked by plugin`; they are not
+cards in the SkillHub market page.
 
 ## Outstanding manual gates
 
-- Run a full natural-language modeling task through `create-3d-model` in the
+- Run a full natural-language modeling task through `sh-blender` in the
   desktop app and inspect the produced `.blend` / PNG / GLB.
 - Uninstall / reinstall through the desktop UI (the version-refresh half of V12
   is already proven).

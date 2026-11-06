@@ -6,17 +6,18 @@ This plugin adapts code from dsh-blender v0.2.4:
   License: MIT; original copyright (c) 2026 nekos. See LICENSE and
   THIRD_PARTY_NOTICES.md.
 
-It bundles an adapted copy of the create-3d-model Agent Skill:
+It bundles an adapted copy of the create-3d-model Agent Skill
+(installed in this plugin under the name `sh-blender`):
   https://github.com/CheshireJCat/blender-modeling-skill
   License: MIT; Copyright (c) 2026 CheshireJCat.
-  See skills/create-3d-model/LICENSE.
+  See skills/sh-blender/LICENSE.
 
 That skill preserves and adapts modules from:
   https://github.com/RobLe3/cc-blender-skill (release 1.3.0,
   commit 11016c9a5847897491dde935c346571bd7548e3d)
   License: MIT; Copyright (c) 2026 RobLe3.
-  See skills/create-3d-model/UPSTREAM_LICENSE and
-  skills/create-3d-model/references/upstream.md.
+  See skills/sh-blender/UPSTREAM_LICENSE and
+  skills/sh-blender/references/upstream.md.
 
 All bundled upstream license texts, provenance documents and copyright notices
 are retained unmodified. The full MIT texts are reproduced in

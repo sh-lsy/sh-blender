@@ -16,7 +16,7 @@ Use a **Merge → Consistency → Optimize → Store** cycle:
 
 ## Skill category map
 
-- **Top-level orchestrators:** `create-3d-model`, `quality-refinement-autoloop`, `mascot-logo-reconstruction`.
+- **Top-level orchestrators:** `sh-blender`, `quality-refinement-autoloop`, `mascot-logo-reconstruction`.
 - **General production:** `blender-pro-workflow`, `blender-modeling`, `blender-materials`, `blender-lighting`, `blender-cameras`, `blender-rendering`, `blender-animation`, `blender-export`.
 - **Reference reconstruction:** `reference-to-3d`, `wireframe-to-3d`, `reference-analysis-validator`, `source-part-segmentation`, `orthographic-registration`, `multiview-constraint-solver`, `contour-to-mesh`, `texture-driven-mesh-fitting`, `landmark-fit-repair`, `multiview-fit-loop`, `fit-repair-optimizer`.
 - **Texture/UV:** `blender-uv-texturing`, `atlas-uv-fitting`, `closed-surface-uv-coverage`.

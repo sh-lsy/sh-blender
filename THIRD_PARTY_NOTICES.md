@@ -15,7 +15,7 @@ portions of the Software. They must not be removed, renamed, or reassigned.
 | Original skill modules | https://github.com/RobLe3/cc-blender-skill | release `1.3.0`, commit `11016c9a5847897491dde935c346571bd7548e3d` | MIT | (c) 2026 RobLe3 |
 
 The intermediate adaptation of `create-3d-model` and the retention of upstream
-module recipes are documented in `skills/create-3d-model/references/upstream.md`.
+module recipes are documented in `skills/sh-blender/references/upstream.md`.
 
 ## 2. What was borrowed
 
@@ -28,7 +28,7 @@ module recipes are documented in `skills/create-3d-model/references/upstream.md`
 - `scripts/sh_blender_driver.py` and `scripts/sh_blender_helper_driver.py` —
   adapted from upstream `scripts/dsh_blender_driver.py` and
   `dsh_blender_helper_driver.py`.
-- `skills/create-3d-model/**` — 30 skill documents (1 orchestrator +
+- `skills/sh-blender/**` — 30 skill documents (1 orchestrator +
   29 modules, the latter renamed to `MODULE.md` for WorkBuddy), 26 Python helper
   scripts, domain references, `LICENSE`, `UPSTREAM_LICENSE`, and `upstream.md`.
 - `requirements-analysis.txt` and `assets/sh-blender-lamp-preview.png`.
@@ -69,7 +69,7 @@ SOFTWARE.
 
 ## 4. Upstream LICENSE — create-3d-model skill
 
-Source: `skills/create-3d-model/LICENSE` (retained unmodified)
+Source: `skills/sh-blender/LICENSE` (retained unmodified)
 
 ```text
 MIT License
@@ -97,7 +97,7 @@ SOFTWARE.
 
 ## 5. Upstream LICENSE — cc-blender-skill
 
-Source: `skills/create-3d-model/UPSTREAM_LICENSE` (retained unmodified)
+Source: `skills/sh-blender/UPSTREAM_LICENSE` (retained unmodified)
 
 ```text
 MIT License

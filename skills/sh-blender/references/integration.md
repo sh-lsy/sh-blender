@@ -8,7 +8,7 @@ the bundled module documents under `references/modules/`.
 
 `sh-blender` is a WorkBuddy plugin. It bundles:
 
-- **One auto-triggered skill**: `create-3d-model` (this skill).
+- **One auto-triggered skill**: `sh-blender` (this skill).
 - **29 domain module documents**: `references/modules/<name>/MODULE.md`, plain
   reference files read on demand. They are not separately registered skills.
 - **13 `blender_*` tools**, exposed by the plugin's local MCP server
@@ -56,12 +56,12 @@ from `references/capability-map.md`. Do not read all 29 modules preemptively.
 Three relative-path bases must not be confused:
 
 - `references/...` paths mentioned in this orchestrator resolve relative to the
-  `create-3d-model` skill root.
+  `sh-blender` skill root.
 - `references/...` and `scripts/...` paths inside a module resolve relative to
   that module's own directory.
 - Helper entries in `blender_helper_catalog` use
   `references/modules/<module>/scripts/<file>.py` relative to the
-  `create-3d-model` skill root. The tool resolves these automatically.
+  `sh-blender` skill root. The tool resolves these automatically.
 
 ## 4. Workspaces and paths
 

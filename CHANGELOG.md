@@ -4,6 +4,36 @@ All notable changes to `sh-blender` are documented here. This project starts
 at `1.0.0`; it is **not** a continuation of the upstream `dsh-blender` version
 line.
 
+## 1.0.4 - 2026-11-06
+
+Skill rename, marketplace snapshot hygiene, and the installed-side analysis
+runtime.
+
+- **Renamed the skill** `create-3d-model` → `sh-blender`: the directory is now
+  `skills/sh-blender/`, the frontmatter `name` is `sh-blender`, and the slash
+  command is `/sh-blender:sh-blender`. Previously `/sh` could not match the
+  entry, which is why the command felt "missing" from the menu. Orchestrator
+  prose in the module references was updated accordingly; the upstream
+  provenance documents still refer to the original `create-3d-model` name,
+  because that is what the adaptation came from.
+- `src/upstream-runtime.js`, `scripts/validate-plugin.js` and
+  `scripts/desktop-plugin.mjs` now resolve `skills/sh-blender/...`; the
+  validator asserts the new name.
+- `scripts/sync-local-marketplace.mjs` no longer ships workspace-local agent
+  state: `.workbuddy/` is filtered out of the file list and directories left
+  empty by pruning are removed, so both the snapshot and the installed cache
+  carry only plugin files.
+- Installed-side fix: when the plugin is loaded from the desktop cache,
+  `${CODEBUDDY_PLUGIN_DATA}` is the host data directory
+  (`~/.workbuddy/plugins/data/sh-blender-sh-lsy-plugins`), **not** the project's
+  `.plugin-data`. The analysis runtime must be created there with
+  `SH_BLENDER_DATA=<host data dir> node scripts/setup-analysis.js`, otherwise
+  `blender_status.analysis.available` stays `false` and every Python helper is
+  unavailable even though the project-side venv exists.
+- Local cache cleanup: superseded `1.0.0` / `1.0.1` caches and the duplicated
+  `*.bak-sh-blender-<date>` backups were moved aside, and `.in_use` markers whose
+  pid no longer exists were removed.
+
 ## 1.0.3 - 2026-11-06
 
 Fixed desktop MCP loading and version reporting.

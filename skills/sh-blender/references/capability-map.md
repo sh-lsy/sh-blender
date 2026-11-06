@@ -22,7 +22,7 @@ Load a module through the WorkBuddy skill loader using the module name in the ta
 | `quality-refinement-autoloop` | A result is repeatedly subpar and evidence must be converted into a repair plan. Do not perform its skill/release mutations without an explicit request. |
 | `mascot-logo-reconstruction` | A brand mascot, logo, flat character, or emblem must be reconstructed through fail-gated source matching. |
 
-The top-level `create-3d-model` orchestrator plus these four modules provide the control plane for the other domains.
+The top-level `sh-blender` orchestrator plus these four modules provide the control plane for the other domains.
 
 ## Core Blender domains
 

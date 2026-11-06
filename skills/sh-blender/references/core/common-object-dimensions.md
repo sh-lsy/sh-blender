@@ -232,7 +232,7 @@ When you don't have a specific reference for a subject, anchor it against human 
 
 ## How to use these in code
 
-The `create-3d-model` orchestrator should read this file (at most once per session) before generating any modeling code. Pattern:
+The `sh-blender` orchestrator should read this file (at most once per session) before generating any modeling code. Pattern:
 
 ```python
 # Sword example with explicit reference values

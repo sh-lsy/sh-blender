@@ -24,7 +24,7 @@ MIT provenance.
 | Runtime dependencies | 0 | Node built-ins only; no `npm install` at plugin activation |
 
 The 29 module documents live at
-`skills/create-3d-model/references/modules/<name>/MODULE.md` and are read on
+`skills/sh-blender/references/modules/<name>/MODULE.md` and are read on
 demand with `@references/modules/<name>/MODULE.md`. Only one skill is
 auto-triggered, which keeps the session's always-on metadata small while
 retaining all 30 documents.
@@ -75,8 +75,8 @@ next scan with no restart.
 exercising it:
 
 - Ask the agent to call `blender_status` (it should report Blender 5.2.2 LTS).
-- Or run `/create-3d-model` with a modeling request. The skill is named
-  `create-3d-model` — it contains no "sh", so searching `/sh` will not find it.
+- Or run `/sh-blender:sh-blender` with a modeling request. The skill is named
+  `sh-blender`, so searching `/sh` in the slash menu finds it.
 - `node scripts/desktop-plugin.mjs --status` shows the registration state.
 - Check `~/.workbuddy/logs/<date>/workbuddyMainThread__*.log`: the catalog scan
   should show one more `server`, with no `skipping MCP server "sh-blender"`.
@@ -170,7 +170,7 @@ Or set `analysis_python` to an existing interpreter. Check the result with
 
 ## Use
 
-Invoke `/sh-blender:create-3d-model` (or simply ask for a 3D model). The
+Invoke `/sh-blender:sh-blender` (or simply ask for a 3D model). The
 orchestrator reads `references/integration.md`, selects the smallest module
 set, and calls the `blender_*` MCP tools.
 
@@ -191,7 +191,7 @@ sh-blender mcp-selftest
 `blender_render_frames` · `blender_export` · `blender_validate_scene` ·
 `blender_validate_export` · `blender_helper_catalog` · `blender_helper_run`
 
-See `skills/create-3d-model/references/integration.md` for the full tool map.
+See `skills/sh-blender/references/integration.md` for the full tool map.
 
 ## Safety boundaries
 

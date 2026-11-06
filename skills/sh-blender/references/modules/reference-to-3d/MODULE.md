@@ -21,7 +21,7 @@ Do not export a final asset until the validation JSON and overlay render pass th
 
 ## Triggered failure mode
 
-If the user says the output does not match the templates/textures/wireframes, stop regular `create-3d-model` generation and enter this workflow. Repeated plausible-but-wrong renders usually mean the missing step is **reference analysis**, not another modeling iteration.
+If the user says the output does not match the templates/textures/wireframes, stop regular `sh-blender` generation and enter this workflow. Repeated plausible-but-wrong renders usually mean the missing step is **reference analysis**, not another modeling iteration.
 
 ## Source-of-truth hierarchy
 
@@ -70,7 +70,7 @@ Classify each provided asset:
 Use `scripts/template_analyzer.py` for first-pass component extraction:
 
 ```bash
-python3 /absolute/path/to/create-3d-model/references/modules/reference-to-3d/scripts/template_analyzer.py \
+python3 /absolute/path/to/sh-blender/references/modules/reference-to-3d/scripts/template_analyzer.py \
   --image /absolute/workspace/path/front_reference.png \
   --out /absolute/workspace/path/front_analysis.json \
   --mode edges  # use bright_on_dark/dark_on_bright/alpha when cleaner
@@ -127,7 +127,7 @@ Always produce:
 Use `scripts/silhouette_validator.py`:
 
 ```bash
-python3 /absolute/path/to/create-3d-model/references/modules/reference-to-3d/scripts/silhouette_validator.py \
+python3 /absolute/path/to/sh-blender/references/modules/reference-to-3d/scripts/silhouette_validator.py \
   --reference /absolute/workspace/path/reference_mask.png \
   --render /absolute/workspace/path/render_mask.png \
   --out /absolute/workspace/path/validation.json
