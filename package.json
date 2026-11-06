@@ -1,0 +1,31 @@
+{
+  "name": "sh-blender",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "WorkBuddy native Blender 3D production plugin maintained by sh-lsy",
+  "author": "sh-lsy",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sh-lsy/sh-blender.git"
+  },
+  "homepage": "https://github.com/sh-lsy/sh-blender#readme",
+  "bugs": {
+    "url": "https://github.com/sh-lsy/sh-blender/issues"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "bin": {
+    "sh-blender": "bin/sh-blender"
+  },
+  "scripts": {
+    "validate": "node scripts/validate-plugin.js",
+    "test": "node --test test/*.test.js",
+    "test:blender": "RUN_BLENDER_TESTS=1 node --test test/blender.integration.test.js",
+    "test:helpers": "RUN_HELPER_TESTS=1 node --test test/helpers.integration.test.js",
+    "setup:analysis": "node scripts/setup-analysis.js",
+    "mcp": "node mcp/server.mjs"
+  }
+}

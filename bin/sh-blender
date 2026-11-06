@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 sh-lsy
+// Extensionless launcher: dynamic import works whether Node treats this file
+// as CommonJS or as ESM (package.json declares "type": "module").
+import('../src/cli.js').catch((error) => {
+  process.stderr.write(`[sh-blender] ${error && error.stack ? error.stack : String(error)}\n`)
+  process.exit(1)
+})

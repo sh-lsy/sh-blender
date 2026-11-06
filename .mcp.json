@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "sh-blender": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${CODEBUDDY_PLUGIN_ROOT}/mcp/server.mjs"],
+      "env": {
+        "SH_BLENDER_ROOT": "${CODEBUDDY_PLUGIN_ROOT}",
+        "SH_BLENDER_DATA": "${CODEBUDDY_PLUGIN_DATA}",
+        "SH_BLENDER_WORKSPACE": "${CODEBUDDY_PROJECT_DIR}",
+        "SH_BLENDER_EXECUTABLE": "${user_config.blender_executable}",
+        "SH_BLENDER_ANALYSIS_PYTHON": "${user_config.analysis_python}"
+      }
+    }
+  }
+}

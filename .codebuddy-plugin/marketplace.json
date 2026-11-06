@@ -1,0 +1,25 @@
+{
+  "name": "sh-lsy-plugins",
+  "description": "sh-lsy 维护的 WorkBuddy 插件",
+  "owner": {
+    "name": "sh-lsy",
+    "url": "https://github.com/sh-lsy"
+  },
+  "plugins": [
+    {
+      "name": "sh-blender",
+      "source": "./",
+      "description": "Blender 3D 建模、重建、渲染、验证与导出插件（30 skills / 26 helpers / 13 tools）",
+      "version": "1.0.0",
+      "author": {
+        "name": "sh-lsy",
+        "url": "https://github.com/sh-lsy"
+      },
+      "homepage": "https://github.com/sh-lsy/sh-blender#readme",
+      "repository": "https://github.com/sh-lsy/sh-blender",
+      "license": "MIT",
+      "keywords": ["blender", "3d-modeling", "agent-skill"],
+      "category": "3D 建模"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+artifacts/
+*.tgz
+.DS_Store
+.sh-blender/
+.plugin-data/
+docs/_evidence/

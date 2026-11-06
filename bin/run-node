@@ -1,0 +1,5 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 sh-lsy
+# POSIX fallback launcher for .mcp.json.
+exec "${WORKBUDDY_NODE_EXECUTABLE:-${CODEBUDDY_NODE_EXECUTABLE:-node}}" "$@"
