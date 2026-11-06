@@ -35,6 +35,35 @@ results are inherited or claimed here.
 | V12 | Install / version refresh | **PASS (version half)** | A real `--bump patch` run advanced `1.0.2 -> 1.0.3` across all three manifests, wrote a new versioned cache and repointed `installed_plugins.json`; the desktop picked it up at its next ~10-minute catalog scan **without a restart**. Uninstall / reinstall through the UI remains a manual check |
 | V13 | Push / tag | **PASS** | With the proxy unstable, repeated attempts succeeded: `main` reached `6f4d4bf`, then the `1.0.3` commit; remote tags `v1.0.0`, `v1.0.2`, `v1.0.3` present. GitHub API confirms the tree |
 
+## Functional audit — real pagoda asset (1.0.5)
+
+Run against a user-produced 7-tier pagoda (`pagoda-v2.blend`, 15 objects,
+12 mesh parts, 13 materials, no UV maps) to exercise the whole tool surface
+rather than the synthetic cube used by the automated integration test.
+
+| Tool / helper | Result |
+| --- | --- |
+| `blender_scene_info` | PASS — 15 objects, 6 collections/materials summary, units, EEVEE, active camera |
+| `blender_object_info` | PASS — world bbox, matrix, evaluated mesh, no shape keys/constraints |
+| `blender_preview` (front) | PASS — 439 349 B PNG, correct framing, visually inspected |
+| `blender_render` (hero camera) | PASS — 951 250 B PNG at 960×960, visually inspected |
+| `blender_render_frames` | PASS — frames 1/60, 2 files, 233 232 B |
+| `blender_export` glb / obj / stl / ply / usd | PASS — 2.2 MB / 1.8 MB / 2.1 MB / 685 KB / 1.3 MB |
+| `blender_export` fbx | **FAILED → fixed in 1.0.5** — `bpy.ops.wm.fbx_export` missing |
+| `blender_validate_export` (glb, web) | PASS — re-imported 12 objects, 12 `missing-uv` warnings |
+| `blender_validate_export` (stl, 3d-print) | PASS — correctly fails with `non-manifold` |
+| `blender_import` (fbx) | PASS after fix — 15 objects, no startup cube |
+| `blender_validate_scene` (general/web) | PASS — general clean; web warns `missing-uv` on all 12 meshes |
+| `blender_helper_run` surface-texture-coverage-audit | PASS — flags missing UV layers and procedural-only materials |
+| `blender_helper_run` animation-contact-sheet | PASS — 87 823 B sheet + diff report |
+| Guard rails | PASS — overwrite denied, `../` traversal denied, unknown helper, maintenance helper blocked, bad extension |
+
+Model-level observations (not plugin defects): no UV maps on any mesh (fine for
+flat PBR colours, blocks texture baking and `web` profile cleanliness), and
+open/non-manifold surfaces throughout, so the model is not 3D-printable.
+
+Artifacts for this audit stay under the git-ignored `artifacts/pagoda-audit/`.
+
 ## Desktop installation (no CLI)
 
 ### Correction to the earlier guidance

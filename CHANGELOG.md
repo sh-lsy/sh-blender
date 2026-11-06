@@ -4,6 +4,30 @@ All notable changes to `sh-blender` are documented here. This project starts
 at `1.0.0`; it is **not** a continuation of the upstream `dsh-blender` version
 line.
 
+## 1.0.5 - 2026-11-06
+
+Two defects found by auditing a real user asset (a 7-tier pagoda) with the full
+tool surface.
+
+- **FBX export/import was broken.** The driver called
+  `bpy.ops.wm.fbx_export` / `bpy.ops.wm.fbx_import`, which do not exist in
+  Blender 5.x, and the `hasattr(bpy.ops.wm, ...)` guard never fell through
+  because `bpy.ops` resolves attributes lazily. Both paths now use the add-on
+  operators `bpy.ops.export_scene.fbx` / `bpy.ops.import_scene.fbx` and enable
+  `io_scene_fbx` when it is not already active. Verified: 519 420 B FBX export,
+  re-import of all 15 objects.
+- **Import polluted the scene.** `blender_import` and `blender_validate_export`
+  imported the asset on top of Blender's startup scene, so the saved `.blend`
+  and every validation report carried a stray `Cube`, `Camera`, `Light` and
+  `Material` — contradicting the documented "clean scene". Import now starts
+  from `read_factory_settings(use_empty=True)`; `blender_validate_export` on the
+  exported OBJ reports exactly 12 objects and no `Cube`.
+- Verified in the same audit: scene/object inspection, preview, still render,
+  frame sequence, GLB/OBJ/STL/PLY/USD export, GLB round-trip validation,
+  3d-print profile failing correctly on non-manifold geometry,
+  `surface-texture-coverage-audit`, `animation-contact-sheet`, plus the guard
+  rails (overwrite denial, traversal rejection, unknown/maintenance helper).
+
 ## 1.0.4 - 2026-11-06
 
 Skill rename, marketplace snapshot hygiene, and the installed-side analysis

@@ -366,15 +366,24 @@ def _render_frames(payload: dict[str, Any]) -> dict[str, Any]:
     return {"frames": frames, "image_paths": paths}
 
 
+def _ensure_addon(name: str) -> None:
+    """Enable a bundled add-on (FBX lives in io_scene_fbx, not in bpy.ops.wm)."""
+    try:
+        import addon_utils
+
+        if not addon_utils.check(name)[1]:
+            addon_utils.enable(name, default_set=True)
+    except Exception:
+        pass
+
+
 def _import_asset_file(path: Path) -> None:
     suffix = path.suffix.lower()
     if suffix in {".glb", ".gltf"}:
         bpy.ops.import_scene.gltf(filepath=str(path))
     elif suffix == ".fbx":
-        if hasattr(bpy.ops.wm, "fbx_import"):
-            bpy.ops.wm.fbx_import(filepath=str(path))
-        else:
-            bpy.ops.import_scene.fbx(filepath=str(path))
+        _ensure_addon("io_scene_fbx")
+        bpy.ops.import_scene.fbx(filepath=str(path))
     elif suffix == ".obj":
         bpy.ops.wm.obj_import(filepath=str(path))
     elif suffix == ".stl":
@@ -391,9 +400,12 @@ def _import_asset_file(path: Path) -> None:
 
 def _import_asset(payload: dict[str, Any], save: bool) -> dict[str, Any]:
     source = Path(payload["source_path"])
-    before = set(bpy.data.objects.keys())
+    # Start from an empty file: the imported asset must be the only content, so
+    # the saved .blend and the validation report never include the startup
+    # cube / camera / light.
+    bpy.ops.wm.read_factory_settings(use_empty=True)
     _import_asset_file(source)
-    imported = sorted(name for name in bpy.data.objects.keys() if name not in before)
+    imported = sorted(bpy.data.objects.keys())
     if save:
         output = Path(payload["output_path"])
         output.parent.mkdir(parents=True, exist_ok=True)
@@ -482,10 +494,10 @@ def _export(payload: dict[str, Any]) -> dict[str, Any]:
             use_selection=selected,
         )
     elif suffix == ".fbx":
-        if hasattr(bpy.ops.wm, "fbx_export"):
-            bpy.ops.wm.fbx_export(filepath=str(output), export_selected_objects=selected)
-        else:
-            bpy.ops.export_scene.fbx(filepath=str(output), use_selection=selected)
+        # FBX is an add-on operator: bpy.ops.wm.fbx_export does not exist, and
+        # hasattr() on bpy.ops is always true because operators resolve lazily.
+        _ensure_addon("io_scene_fbx")
+        bpy.ops.export_scene.fbx(filepath=str(output), use_selection=selected)
     elif suffix == ".obj":
         bpy.ops.wm.obj_export(filepath=str(output), export_selected_objects=selected)
     elif suffix == ".stl":
