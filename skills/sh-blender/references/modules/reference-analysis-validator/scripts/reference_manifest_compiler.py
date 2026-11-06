@@ -39,10 +39,19 @@ def load_mask(path: Path, mode: str) -> tuple[np.ndarray, dict]:
     if img is None:
         raise RuntimeError(f'cannot read {path}')
     meta = {'width': int(img.shape[1]), 'height': int(img.shape[0]), 'channels': int(img.shape[2]) if img.ndim == 3 else 1}
+    used_alpha = False
     if img.ndim == 3 and img.shape[2] == 4 and mode in ('auto', 'alpha'):
-        mask = (img[:, :, 3] > 8).astype('uint8') * 255
-        meta['mask_mode'] = 'alpha'
-    else:
+        alpha = img[:, :, 3]
+        if int(alpha.min()) != int(alpha.max()):
+            mask = (alpha > 8).astype('uint8') * 255
+            meta['mask_mode'] = 'alpha'
+            used_alpha = True
+        else:
+            # A fully opaque (or fully transparent) alpha channel is not a
+            # silhouette; measure luminance instead of reporting the whole
+            # frame as one component.
+            meta['alpha_degenerate'] = True
+    if not used_alpha:
         gray = cv2.cvtColor(img[:, :, :3], cv2.COLOR_BGR2GRAY) if img.ndim == 3 else img
         if mode == 'edges':
             blur = cv2.GaussianBlur(gray, (3, 3), 0)

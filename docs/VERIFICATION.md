@@ -218,3 +218,18 @@ is not an LTS, so 5.2.3 is the right upgrade target.
 - Re-verified on 5.2.3: `RUN_BLENDER_TESTS=1` pipeline PASS (41 s),
   `RUN_HELPER_TESTS=1` PASS, FBX export of the pagoda still 519 420 B,
   `blender_status` reports `Blender 5.2.3 LTS`.
+
+### Follow-up findings (continuing the audit on 5.2.3)
+
+| Check | Result |
+| --- | --- |
+| `blender_python` (bmesh cone + material) | PASS — `sh_result` polygons/vertices returned, 89 219 B `.blend` |
+| `blender_preview` (isometric, 480²) | PASS — 158 977 B |
+| `blender_validate_scene` animation profile | PASS — correctly fails with `no-object-animation` on a static scene |
+| `blender_validate_export` (glb, web) | PASS — 12 objects, no startup cube, 12 `missing-uv` warnings |
+| helper `reference-manifest-compiler` | PASS after fix — opaque input now records `alpha_degenerate` and measures by Otsu |
+| helper `silhouette-validator` | **Was silently wrong → fixed in 1.0.6.** Opaque renders produced an all-foreground mask and `iou: 1.0` for two different images; now falls back to luminance, reports `mask_mode`, and warns above 98 % coverage |
+
+Silhouette comparison is only meaningful on cut-out images: render with
+`blender_render`/`blender_preview` `transparent: true` (alpha then drives the
+mask, e.g. bbox `[202, 82, 236, 476]` for the pagoda front view).

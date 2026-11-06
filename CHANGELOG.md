@@ -4,6 +4,24 @@ All notable changes to `sh-blender` are documented here. This project starts
 at `1.0.0`; it is **not** a continuation of the upstream `dsh-blender` version
 line.
 
+## 1.0.6 - 2026-11-06
+
+Silhouette helpers no longer report a false perfect match on opaque renders.
+Found while auditing the pagoda: `silhouette-validator` returned
+`iou: 1.0, mse: 0.0` for two visibly different images.
+
+- Cause: both mask-based helpers prefer the alpha channel whenever an image has
+  four channels, but renders saved without transparent film are fully opaque, so
+  the mask covered the whole frame and every pair "matched" perfectly.
+- `silhouette_validator.py` now falls back to a luminance threshold when the
+  alpha channel is flat, reports `mask_mode` (`alpha` / `luma_fallback`) and adds
+  a warning when a mask covers more than 98 % of the frame. Verified: the same
+  opaque pair now reports IoU 0.084 with the warning, while transparent renders
+  keep the alpha path (IoU 1.0, correct bbox `[202, 82, 236, 476]`).
+- `reference_manifest_compiler.py` applies the same fallback and records
+  `alpha_degenerate`, so an opaque reference is measured by Otsu instead of being
+  reported as one full-frame component.
+
 ## 1.0.5 - 2026-11-06
 
 Two defects found by auditing a real user asset (a 7-tier pagoda) with the full

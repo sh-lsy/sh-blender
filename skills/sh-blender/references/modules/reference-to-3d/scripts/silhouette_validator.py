@@ -13,16 +13,22 @@ except Exception:
 
 
 def mask(path, threshold=20):
+    """Return (mask, mode). A flat alpha channel carries no silhouette, so an
+    opaque render falls back to a luminance threshold instead of silently
+    producing an all-foreground mask (which would report IoU 1.0)."""
     img = cv2.imdecode(np.fromfile(str(path), dtype=np.uint8), cv2.IMREAD_UNCHANGED)
     if img is None:
         raise FileNotFoundError(path)
     if img.ndim == 3 and img.shape[2] == 4:
-        m = img[:, :, 3]
+        alpha = img[:, :, 3]
+        if int(alpha.min()) != int(alpha.max()):
+            return (alpha > 0).astype(np.uint8), 'alpha'
+        rgb = img[:, :, :3]
     else:
         rgb = img[:, :, :3] if img.ndim == 3 else cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-        gray = cv2.cvtColor(rgb, cv2.COLOR_BGR2GRAY)
-        _, m = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
-    return (m > 0).astype(np.uint8)
+    gray = cv2.cvtColor(rgb, cv2.COLOR_BGR2GRAY)
+    _, m = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
+    return (m > 0).astype(np.uint8), 'luma_fallback'
 
 
 def bbox(m):
@@ -40,10 +46,15 @@ def main():
     ap.add_argument('--out', required=True)
     ap.add_argument('--threshold', type=int, default=20)
     args = ap.parse_args()
-    a = mask(args.reference, args.threshold)
-    b = mask(args.render, args.threshold)
+    a, mode_a = mask(args.reference, args.threshold)
+    b, mode_b = mask(args.render, args.threshold)
     if a.shape != b.shape:
         b = cv2.resize(b, (a.shape[1], a.shape[0]), interpolation=cv2.INTER_NEAREST)
+    warnings = []
+    for label, m in (('reference', a), ('render', b)):
+        coverage = float(m.mean())
+        if coverage > 0.98:
+            warnings.append(f'{label} mask covers {coverage:.0%} of the frame; render with transparent film or pass a masked image')
     inter = np.logical_and(a, b).sum()
     union = np.logical_or(a, b).sum()
     iou = float(inter / union) if union else 0.0
@@ -62,6 +73,8 @@ def main():
         'reference_centroid': ca,
         'render_centroid': cb,
         'centroid_distance_px': center_dist,
+        'mask_mode': {'reference': mode_a, 'render': mode_b},
+        'warnings': warnings,
     }
     Path(args.out).write_text(json.dumps(out, indent=2))
     print(json.dumps(out, indent=2))

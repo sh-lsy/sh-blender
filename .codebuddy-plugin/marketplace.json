@@ -10,7 +10,7 @@
       "name": "sh-blender",
       "source": "./",
       "description": "Blender 3D 建模、重建、渲染、验证与导出插件（30 skills / 26 helpers / 13 tools）",
-      "version": "1.0.5",
+      "version": "1.0.6",
       "author": {
         "name": "sh-lsy",
         "url": "https://github.com/sh-lsy"
