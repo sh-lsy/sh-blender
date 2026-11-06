@@ -47,7 +47,6 @@ const LOCAL_MARKET_MANIFEST = JSON.stringify({
 const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: ROOT, encoding: 'utf8' })
   .split('\0')
   .filter(Boolean)
-  .filter((f) => !f.startsWith('.codebuddy-plugin/'))
 
 mkdirSync(join(MARKET_ROOT, '.codebuddy-plugin'), { recursive: true })
 mkdirSync(PLUGIN_DIR, { recursive: true })
@@ -60,8 +59,6 @@ for (const file of tracked) {
   mkdirSync(dirname(target), { recursive: true })
   copyFileSync(join(ROOT, file), target)
 }
-mkdirSync(join(PLUGIN_DIR, '.codebuddy-plugin'), { recursive: true })
-copyFileSync(join(ROOT, '.codebuddy-plugin/plugin.json'), join(PLUGIN_DIR, '.codebuddy-plugin/plugin.json'))
 writeFileSync(join(MARKET_ROOT, '.codebuddy-plugin/marketplace.json'), LOCAL_MARKET_MANIFEST)
 
 // Fail fast if the marketplace entry cannot be resolved.

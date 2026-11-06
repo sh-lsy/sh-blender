@@ -33,7 +33,7 @@ results are inherited or claimed here.
 | V10 | Security | **PASS** | V2 asserts `../` traversal and symlink escape are rejected; V5 asserts traversal rejection. Runtime always passes `--disable-autoexec`, uses one fresh Blender process per call, denies overwrite by default, and removes temporary payload/result directories |
 | V11 | Compliance | **PASS** | Root `LICENSE` (© 2026 SH), `skills/.../LICENSE` (© 2026 CheshireJCat), `UPSTREAM_LICENSE` (© 2026 RobLe3), `NOTICE`, and `THIRD_PARTY_NOTICES.md` with the three MIT texts in full. No claim of inheriting upstream verification results |
 | V12 | Install / uninstall / version refresh | **PENDING (manual)** | Requires desktop-side install → uninstall → reinstall and a version bump check |
-| V13 | Push / tag | **PASS** | After the HTTPS proxy recovered, `git push -u origin main` succeeded (`1ac86d8..3dd02e7`) and `git push origin v1.0.0` created the remote tag. GitHub API confirms 119 files on `main`, including `.codebuddy-plugin/plugin.json`, `mcp/server.mjs`, 1 `SKILL.md` and 29 `MODULE.md` |
+| V13 | Push / tag | **PASS** | After the HTTPS proxy recovered, `git push -u origin main` succeeded (`1ac86d8..3dd02e7`) and `git push origin v1.0.0` created the remote tag. GitHub API confirms 120 files on `main`, including `.codebuddy-plugin/plugin.json`, `mcp/server.mjs`, 1 `SKILL.md` and 29 `MODULE.md` |
 
 ## Desktop installation (no CLI)
 
