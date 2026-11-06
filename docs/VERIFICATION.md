@@ -12,7 +12,7 @@ results are inherited or claimed here.
 | Node.js | v22.22.2 |
 | npm / pnpm | 10.9.7 / 11.12.0 |
 | Python | 3.13.14 |
-| Blender | **5.2.2 LTS** (build 2026-09-15) |
+| Blender | **5.2.3 LTS** (build 2026-10-22) — upgraded from 5.2.2 on 2026-11-06; portable build at `D:\Blender\blender-5.2.3-windows-x64`, resolved via the user `PATH` entry |
 | git | 2.55.0.windows.3, `credential.helper=manager` |
 | `codebuddy` CLI | not on PATH (WorkBuddy desktop embeds the runtime) |
 | Analysis deps | opencv 4.12.0 / numpy 2.2.6 / Pillow 12.0.0 / scipy 1.16.3 |
@@ -198,3 +198,23 @@ RUN_HELPER_TESTS=1 node --test test/helpers.integration.test.js
 node bin/sh-blender mcp-selftest
 node bin/sh-blender status
 ```
+
+## Blender upgrade — 5.2.2 → 5.2.3 LTS (2026-11-06)
+
+Checked `blender.org/download`: the current stable release is **5.2.3 LTS**
+(released 2026-10-22); the local portable build was 5.2.2 (2026-09-15), one
+patch behind. Blender 5.3 was still listed as upcoming (expected 2026-11-10) and
+is not an LTS, so 5.2.3 is the right upgrade target.
+
+- Downloaded `blender-5.2.3-windows-x64.zip` (405 839 452 B) from the NJU
+  mirror; SHA-256 `723f08a4…5dc2fb` matches the official
+  `blender-5.2.3.sha256`. `download.blender.org` itself returns a Cloudflare
+  challenge page to scripted requests, and the Aliyun mirror was ~230 KB/s
+  versus ~11 MB/s on NJU.
+- Extracted to `D:/Blender/blender-5.2.3-windows-x64`; the 5.2.2 directory is
+  kept for rollback. The user `PATH` entry
+  `D:/Blender/blender-5.2.2-windows-x64` was replaced (backup of the previous
+  value: `D:/Blender/user-path-backup-20261106.txt`).
+- Re-verified on 5.2.3: `RUN_BLENDER_TESTS=1` pipeline PASS (41 s),
+  `RUN_HELPER_TESTS=1` PASS, FBX export of the pagoda still 519 420 B,
+  `blender_status` reports `Blender 5.2.3 LTS`.
