@@ -1,21 +1,47 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 sh-lsy
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const SRC_DIR = dirname(fileURLToPath(import.meta.url))
 
+/**
+ * The desktop host only substitutes ${CODEBUDDY_PLUGIN_ROOT} and
+ * ${CODEBUDDY_PLUGIN_DATA} in a plugin's .mcp.json. Any other placeholder is
+ * passed through verbatim, so treat it as unset instead of resolving it into a
+ * bogus path.
+ */
+function envPath(value) {
+  return typeof value === 'string' && value.trim() !== '' && !value.includes('${') ? resolve(value) : ''
+}
+
 /** Read-only plugin installation directory. Never write here at runtime. */
-export const PLUGIN_ROOT = resolve(process.env.SH_BLENDER_ROOT || resolve(SRC_DIR, '..'))
+export const PLUGIN_ROOT = envPath(process.env.SH_BLENDER_ROOT) || resolve(SRC_DIR, '..')
 
 /** Persistent plugin-internal state (temporary payloads, .venv). */
-export const PLUGIN_DATA = resolve(process.env.SH_BLENDER_DATA || join(PLUGIN_ROOT, '.plugin-data'))
+export const PLUGIN_DATA = envPath(process.env.SH_BLENDER_DATA) || join(PLUGIN_ROOT, '.plugin-data')
 
-/** Current task workspace: all user-visible artifacts must stay inside it. */
-export const WORKSPACE = resolve(process.env.SH_BLENDER_WORKSPACE || process.cwd())
+/**
+ * Current task workspace: all user-visible artifacts must stay inside it.
+ * The desktop host injects CODEBUDDY_PROJECT_DIR into MCP subprocesses; when
+ * running standalone (CLI/tests) fall back to the process cwd.
+ */
+export const WORKSPACE = envPath(process.env.SH_BLENDER_WORKSPACE)
+  || envPath(process.env.CODEBUDDY_PROJECT_DIR)
+  || envPath(process.env.CLAUDE_PROJECT_DIR)
+  || resolve(process.cwd())
 
-export const VERSION = '1.0.0'
+function readVersion() {
+  try {
+    const manifest = join(SRC_DIR, '..', 'package.json')
+    return existsSync(manifest) ? JSON.parse(readFileSync(manifest, 'utf8')).version : '1.0.0'
+  } catch {
+    return '1.0.0'
+  }
+}
+
+export const VERSION = readVersion()
 
 export const DEFAULTS = Object.freeze({
   blenderExecutable: 'blender',
@@ -32,7 +58,8 @@ export const DEFAULTS = Object.freeze({
 })
 
 function firstNonEmpty(...values) {
-  return values.find((v) => typeof v === 'string' && v.trim() !== '') ?? ''
+  // Unresolved ${...} placeholders must not be treated as real values.
+  return values.find((v) => typeof v === 'string' && v.trim() !== '' && !v.includes('${')) ?? ''
 }
 
 function detectBlender() {

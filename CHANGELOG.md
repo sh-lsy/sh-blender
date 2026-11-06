@@ -4,6 +4,29 @@ All notable changes to `sh-blender` are documented here. This project starts
 at `1.0.0`; it is **not** a continuation of the upstream `dsh-blender` version
 line.
 
+## 1.0.3 - 2026-11-06
+
+Fixed desktop MCP loading and version reporting.
+
+- **Root cause**: the desktop's `PluginMcpProvider` throws
+  `MissingPluginUserConfigError` for an unset `${user_config.KEY}` and skips the
+  entire MCP server; `${CODEBUDDY_PROJECT_DIR}` is never substituted. Both were
+  present in `.mcp.json`, so the plugin's 13 tools never appeared.
+- `.mcp.json` now uses only `${CODEBUDDY_PLUGIN_ROOT}` /
+  `${CODEBUDDY_PLUGIN_DATA}`. Optional values come from host-injected
+  `CODEBUDDY_PLUGIN_OPTION_*` variables; `userConfig` keys have `default: ""`.
+- `src/config.js` rejects unresolved `${...}` placeholders and resolves the
+  workspace from `CODEBUDDY_PROJECT_DIR` / `process.cwd()`.
+- `src/jsonrpc.js` and `src/config.js` now report the real package version
+  instead of a hard-coded `1.0.0`.
+- `scripts/desktop-plugin.mjs` guards against the forbidden placeholders and
+  documents the correct skill name (`create-3d-model`, not `sh-blender`).
+- **Desktop verification**: after the fix the host's own catalog scan reported
+  `servers=4 -> 5` with no skip warning, `custom-mcp:sh-blender state=ready`,
+  and all 13 `blender_*` tools in `mcp-tool-list.json`. Confirmed the desktop
+  re-scans automatically about every 10 minutes, so a version bump is picked up
+  without a restart (restart still makes it immediate).
+
 ## 1.0.2 - 2026-11-06
 
 Desktop installation and update workflow.

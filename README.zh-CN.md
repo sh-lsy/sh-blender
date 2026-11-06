@@ -52,14 +52,18 @@ node scripts/desktop-plugin.mjs
    的 `enabledPlugins`（启用）。首次改动前都会备份成 `*.bak-sh-blender`。
 4. 校验清单、`.mcp.json`、MCP server、`SKILL.md` 是否齐全。
 
-然后**完全退出 WorkBuddy 再重新打开**（只关窗口不够，插件在启动时投影）。
-也可以先在对话里试 `/reload-plugins`。
+然后**完全退出 WorkBuddy 再重新打开**可立即生效。实测桌面端也会约每 10 分钟
+自动重扫一次插件目录（`PluginMcpProvider catalog scan`），所以不改配置的话最迟
+10 分钟内也会自动加载；想马上验证就重启。
 
 **怎么确认装好了** —— 别去「技能」页找卡片，直接试能力：
 
 - 让 Agent 调用 `blender_status`（正常会返回 Blender 5.2.2 LTS）。
-- 或运行 `/sh-blender:create-3d-model` 提一个建模需求。
+- 或运行 `/create-3d-model` 提一个建模需求。**技能名是 `create-3d-model`，
+  不含 "sh"**，所以在 `/` 列表里搜 `/sh` 是搜不到的。
 - `node scripts/desktop-plugin.mjs --status` 查看注册状态。
+- 看日志 `~/.workbuddy/logs/2026-11-06/workbuddyMainThread__*.log` 里
+  `servers=N` 是否增加、有无 `skipping MCP server "sh-blender"` 警告。
 
 ### 改了代码之后怎么更新
 
@@ -72,8 +76,25 @@ node scripts/desktop-plugin.mjs                  # 覆盖当前版本（快速�
 `--bump` 会同步提升 `plugin.json`、`package.json`、`marketplace.json` 三处版本，
 重建快照，写入**新的版本化缓存目录**，并把 `installed_plugins.json` 指过去。
 桌面端按版本做缓存键，升版本才能保证真正重新加载；不带 `--bump` 是覆盖同版本
-目录，适合快速迭代，但同样要重启应用。更新后完全重启 WorkBuddy，再用
-`blender_status` 复验。建议运行脚本前先退出桌面端，因为它在启动时会重写这些 JSON。
+目录，适合快速迭代。实测（v1.0.2 → v1.0.3）：改完 `installed_plugins.json` 后，
+桌面端在下一次约 10 分钟一轮的 `catalog scan` 中自动识别了新版本，无需重启；
+想立即生效就完全退出并重新打开应用。更新后用 `blender_status` 复验。
+建议运行脚本前先退出桌面端，因为它在启动时会重写这些 JSON。
+
+### 排障：MCP server 被跳过
+
+桌面端 `PluginMcpProvider` 在替换插件变量时，**`.mcp.json` 中不允许出现
+`${user_config.KEY}`**（未配置值会抛 `MissingPluginUserConfigError` 并跳过整个
+server），也**不会替换 `${CODEBUDDY_PROJECT_DIR}`**（会原样传给子进程）。
+本插件已改为：
+
+- `.mcp.json` 只保留 `${CODEBUDDY_PLUGIN_ROOT}` / `${CODEBUDDY_PLUGIN_DATA}`；
+- 可选配置通过宿主自动注入的 `CODEBUDDY_PLUGIN_OPTION_*` 环境变量读取，`plugin.json`
+  的 `userConfig` 键都带 `default: ""`；
+- 工作区由 `src/config.js` 从 `CODEBUDDY_PROJECT_DIR` / `process.cwd()` 兜底；
+- `scripts/desktop-plugin.mjs` 内置守卫，发现这些占位符会直接报错，避免回归。
+
+症状：日志出现 `skipping MCP server "sh-blender"`、MCP 面板没有 13 个 `blender_*` 工具。
 
 ### 分享给其他机器
 

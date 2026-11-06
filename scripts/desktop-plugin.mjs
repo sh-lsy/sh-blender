@@ -114,6 +114,18 @@ if (kind) {
   console.log(`bumped version -> ${version}`)
 }
 
+// Guard against MCP configs the desktop host cannot substitute. Its
+// PluginMcpProvider throws MissingPluginUserConfigError for an unset
+// ${user_config.KEY} and skips the whole server; ${CODEBUDDY_PROJECT_DIR}
+// is not substituted at all. Runtime values are injected as
+// CODEBUDDY_PLUGIN_OPTION_* environment variables instead.
+const mcpText = readFileSync(join(ROOT, '.mcp.json'), 'utf8')
+for (const forbidden of ['${user_config.', '${CODEBUDDY_PROJECT_DIR}', '${CLAUDE_PROJECT_DIR}']) {
+  if (mcpText.includes(forbidden)) {
+    throw new Error(`.mcp.json contains ${forbidden} -> the desktop host would skip this MCP server. Use CODEBUDDY_PLUGIN_OPTION_* env vars and src/config.js defaults instead.`)
+  }
+}
+
 // 1. Refresh the clean local marketplace snapshot.
 syncMarketplace()
 const marketManifest = readJson(join(MARKET_ROOT, '.codebuddy-plugin/marketplace.json'))
@@ -190,6 +202,7 @@ console.log(`
 Done. sh-blender ${version} is registered as installed + enabled.
 Next: fully quit WorkBuddy and start it again (or try /reload-plugins in chat).
 The "专家·技能·连接器 → 技能" page shows the SkillHub skill market; a native
-plugin does not appear as a card there. Verify it by running
-/sh-blender:create-3d-model or by calling the blender_status MCP tool.
+plugin does not appear as a card there. The installed skill is named
+"create-3d-model" (not "sh-blender"), so search for /create-3d-model or just
+ask the agent to build a 3D model. Also verify the blender_status MCP tool.
 `)

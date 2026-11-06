@@ -10,7 +10,9 @@ const METHOD_NOT_FOUND = -32601
 const INVALID_PARAMS = -32602
 const INTERNAL_ERROR = -32603
 
-const SERVER_INFO = { name: 'sh-blender', version: '1.0.0' }
+import { VERSION } from './config.js'
+
+const SERVER_INFO = { name: 'sh-blender', version: VERSION }
 
 function error(id, code, message) {
   return { jsonrpc: '2.0', id: id ?? null, error: { code, message } }

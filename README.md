@@ -66,16 +66,20 @@ What it does (idempotent, safe to re-run):
    All three are backed up as `*.bak-sh-blender` before the first change.
 4. Verifies the manifest, `.mcp.json`, MCP server, and `SKILL.md` all exist.
 
-Then **fully quit WorkBuddy and start it again** (closing the window is not
-enough — the runtime projects plugins at startup). Try `/reload-plugins` in
-chat first if you prefer not to restart.
+Fully quit and restart WorkBuddy for immediate effect. In practice the desktop
+also re-scans plugins about every 10 minutes (`PluginMcpProvider catalog scan`);
+observed on this machine: v1.0.2 -> v1.0.3 was picked up automatically at the
+next scan with no restart.
 
 **Verify it worked** — not by looking for a card in the 技能 page, but by
 exercising it:
 
 - Ask the agent to call `blender_status` (it should report Blender 5.2.2 LTS).
-- Or run `/sh-blender:create-3d-model` with a modeling request.
+- Or run `/create-3d-model` with a modeling request. The skill is named
+  `create-3d-model` — it contains no "sh", so searching `/sh` will not find it.
 - `node scripts/desktop-plugin.mjs --status` shows the registration state.
+- Check `~/.workbuddy/logs/<date>/workbuddyMainThread__*.log`: the catalog scan
+  should show one more `server`, with no `skipping MCP server "sh-blender"`.
 
 ### Updating after you change the code
 
@@ -89,8 +93,25 @@ node scripts/desktop-plugin.mjs                  # overwrite the current version
 rebuilds the snapshot, writes a **new versioned cache directory**, and points
 `installed_plugins.json` at it. The desktop keys its cache by version, so
 bumping is what guarantees a real reload. Without `--bump` the same version
-directory is overwritten — fine for a quick local iteration, but restart the
-app to pick it up.
+directory is overwritten — fine for a quick local iteration. Restart the app
+to pick the change up immediately, or wait for the ~10 minute catalog scan.
+
+### Troubleshooting: MCP server skipped
+
+The desktop's `PluginMcpProvider` throws `MissingPluginUserConfigError` and
+skips the whole server if `.mcp.json` contains `${user_config.KEY}` with no
+configured value, and it does **not** substitute `${CODEBUDDY_PROJECT_DIR}` at
+all. This plugin therefore:
+
+- keeps only `${CODEBUDDY_PLUGIN_ROOT}` / `${CODEBUDDY_PLUGIN_DATA}` in
+  `.mcp.json`;
+- reads optional settings from the host-injected `CODEBUDDY_PLUGIN_OPTION_*`
+  environment variables, with `default: ""` on every `userConfig` key;
+- resolves the workspace in `src/config.js` from `CODEBUDDY_PROJECT_DIR` or
+  `process.cwd()`;
+- ships a guard in `scripts/desktop-plugin.mjs` that rejects those placeholders.
+
+Symptom: `skipping MCP server "sh-blender"` in the log and no `blender_*` tools.
 
 After any update: fully restart WorkBuddy, then re-check with
 `blender_status`. Best practice is to quit the desktop app before running the
