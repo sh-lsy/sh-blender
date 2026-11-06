@@ -29,7 +29,7 @@ results are inherited or claimed here.
 | V6 | `RUN_HELPER_TESTS=1 node --test test/helpers.integration.test.js` | **PASS** | 23 default / 26 with `enableMaintenanceHelpers`, maintenance helper blocked by default, `wireframe-analyzer` on a 64×64 PGM produced 2 contours and a JSON report |
 | V7 | Windows / Unicode paths | **PASS** | Ad-hoc run in workspace `sh-blender 中文 空格 😀`: created `.blend` (94 590 B), preview PNG (18 255 B), `.glb` (1 740 B), helper JSON (1 348 B); Chinese filenames at every stage, including OpenCV-based helper — upstream v0.2.4 Unicode fix retained |
 | V8 | CLI fallback | **PASS** | `sh-blender info`, `list-tools` (13), `status`, `mcp-selftest`, and `blender_helper_catalog --json '{}'` (23 helpers) all returned the same structured results as MCP |
-| V9 | **WorkBuddy desktop integration** | **READY / PENDING (manual)** | Marketplace registration is complete on this machine (see "Desktop installation" below). Requires the user to restart the desktop app, install `sh-blender` from the `sh-lsy-plugins` market, confirm the MCP server is green, then run `/sh-blender:create-3d-model`. **This is the only hard gate before Phase 6 publication.** |
+| V9 | **WorkBuddy desktop integration** | **REGISTERED / PENDING (manual restart)** | `scripts/desktop-plugin.mjs` has registered the plugin as installed + enabled (see "Desktop installation"). `mcp-tool-list.json` is still the 14:59 snapshot with no `blender_*` tools, so the runtime has not re-projected yet. The user must **fully quit and reopen** WorkBuddy (or try `/reload-plugins`), then call `blender_status` and run `/sh-blender:create-3d-model`. **This is the only hard gate before Phase 6 publication.** |
 | V10 | Security | **PASS** | V2 asserts `../` traversal and symlink escape are rejected; V5 asserts traversal rejection. Runtime always passes `--disable-autoexec`, uses one fresh Blender process per call, denies overwrite by default, and removes temporary payload/result directories |
 | V11 | Compliance | **PASS** | Root `LICENSE` (© 2026 SH), `skills/.../LICENSE` (© 2026 CheshireJCat), `UPSTREAM_LICENSE` (© 2026 RobLe3), `NOTICE`, and `THIRD_PARTY_NOTICES.md` with the three MIT texts in full. No claim of inheriting upstream verification results |
 | V12 | Install / uninstall / version refresh | **PENDING (manual)** | Requires desktop-side install → uninstall → reinstall and a version bump check |
@@ -37,37 +37,73 @@ results are inherited or claimed here.
 
 ## Desktop installation (no CLI)
 
-The desktop app registers marketplaces in
-`C:\Users\SH\.workbuddy\plugins\known_marketplaces.json`. A `directory` entry
-named `sh-lsy-plugins` was added (the original file was backed up to
-`known_marketplaces.json.bak-sh-blender-20261106`), pointing at
-`D:\sy\sh-blender-marketplace`. That directory is a clean snapshot produced by
-`scripts/sync-local-marketplace.mjs` and uses the officially observed
-`./plugins/sh-blender` layout.
+### Correction to the earlier guidance
 
-Verified before hand-off:
+An earlier version of this document told the user to navigate
+**Plugins → Marketplaces → `sh-lsy-plugins`**. That path was inferred from the
+CLI/TUI documentation and is **wrong for the desktop app**. A screenshot of the
+actual UI confirmed the sidebar entry is
+**专家 · 技能 · 连接器 → 技能** — the *SkillHub skill market* with skill cards,
+a `+ 添加技能` dropdown and an "已安装" tab. A native plugin
+(`.codebuddy-plugin/plugin.json` + `.mcp.json` + `bin/`) does not appear as a
+card there, and there is no "Plugins → Marketplaces" tab.
 
-- `marketplace.json` parses; its `source` resolves to a directory containing
-  `.codebuddy-plugin/plugin.json`, `.mcp.json`, `mcp/server.mjs` and
-  `skills/create-3d-model/SKILL.md`.
-- `plugin.json` name/version match the marketplace entry (`sh-blender` / `1.0.0`).
-- `mcp/server.mjs` starts from the marketplace copy with
-  `SH_BLENDER_ROOT` pointing there and reports 13 tools; startup diagnostics
-  go to stderr.
+Registering only `known_marketplaces.json` was also insufficient: after the
+desktop restarted, the entry survived (the app rewrote the file at 14:56 but
+kept it), yet `installed_plugins.json` had no `sh-blender` entry and no
+`cache/sh-lsy-plugins/` directory existed — so nothing was projected.
 
-User steps: restart WorkBuddy → **Plugins → Marketplaces → `sh-lsy-plugins`**
-→ install `sh-blender` → `/reload-plugins` → confirm MCP green → run
-`/sh-blender:create-3d-model`. For other machines, add the GitHub marketplace
-address `sh-lsy/sh-blender` from the **+** button instead.
+### What the desktop actually reads
+
+| File | Role |
+| --- | --- |
+| `~/.workbuddy/plugins/known_marketplaces.json` | registered marketplaces |
+| `~/.workbuddy/plugins/installed_plugins.json` | installed plugins, cache path and version |
+| `~/.workbuddy/settings.json` → `enabledPlugins` | enable/disable per `<plugin>@<market>` |
+| `~/.workbuddy/plugins/cache/<market>/<plugin>/<version>/` | the actual plugin payload |
+
+`scripts/desktop-plugin.mjs` writes all four, idempotently, with
+`*.bak-sh-blender` backups. `--status` prints the state; `--bump patch|minor|major`
+bumps the three version files and installs into a new versioned cache directory.
+
+### Verified state after direct registration
+
+- `known_marketplaces.json` → `sh-lsy-plugins` present (`type: directory`).
+- `installed_plugins.json` → `sh-blender@sh-lsy-plugins` pointing at
+  `C:\Users\SH\.workbuddy\plugins\cache\sh-lsy-plugins\sh-blender\1.0.2`
+  (version `1.0.2`).
+- `settings.json` → `enabledPlugins["sh-blender@sh-lsy-plugins"] = true`.
+- The earlier `1.0.0` cache received a `.in_use/<pid>` marker from the desktop at
+  15:02:46, showing the runtime detected the newly registered cache directory.
+- Manifest, `.mcp.json`, `mcp/server.mjs` and `SKILL.md` all present in cache;
+  `mcp/server.mjs` starts standalone and reports 13 tools.
+- `--bump patch` was exercised for real: the three version files advanced
+  together, a fresh `1.0.2` cache was written (121 files), and
+  `installed_plugins.json` was repointed. `--status` reports the new state.
+- `node scripts/desktop-plugin.mjs --status` output was verified after the bump.
+
+### Still required from the user
+
+`~/.workbuddy/mcp-tool-list.json` was last written at 14:59 and contains no
+`blender_*` tools, i.e. the runtime projected its plugin/MCP set **before** the
+registration at 15:02. **Fully quit WorkBuddy and start it again** (or try
+`/reload-plugins` in chat) so the runtime re-projects. Then verify by calling
+`blender_status` or running `/sh-blender:create-3d-model` — not by looking for
+a card in the 技能 page.
 
 ## Outstanding manual gates
 
-V9 and V12 require interaction with the WorkBuddy desktop UI. The GitHub
-repository marketplace entry still uses `source: "./"` (self-referential single
-repo); that form is supported by the compatible Claude Code plugin format but
-has **not** been confirmed by this desktop build. The registered local
-`directory` market uses the verified `./plugins/sh-blender` layout and is the
-recommended path until V9 confirms the GitHub form.
+V9 (full restart → `blender_status` → full modeling task) and V12 (uninstall /
+reinstall) still require the desktop app. The version-bump half of V12 was
+already exercised by a real `--bump patch` run that moved the registration from
+`1.0.0` to `1.0.2`; what remains is confirming the restarted app sees the new
+tools.
+
+The GitHub repository marketplace entry uses `source: "./"` (self-referential
+single repo); that form is supported by the compatible Claude Code plugin format
+but has **not** been confirmed by this desktop build. The local `directory`
+market with `./plugins/sh-blender` is the verified path. Superseded
+`1.0.0` / `1.0.1` cache directories can be removed manually once V9 passes.
 
 ## Known limitations
 

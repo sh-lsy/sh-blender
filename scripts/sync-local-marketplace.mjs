@@ -44,7 +44,10 @@ const LOCAL_MARKET_MANIFEST = JSON.stringify({
 }, null, 2) + '\n'
 
 // Only tracked files are copied, so generated state never reaches the market.
-const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: ROOT, encoding: 'utf8' })
+// `--cached --others --exclude-standard` includes untracked-but-not-ignored
+// files, so edits that have not been staged yet still reach the snapshot.
+// Copying reads the working-tree bytes, so staged/unstaged changes are picked up.
+const tracked = execFileSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], { cwd: ROOT, encoding: 'utf8' })
   .split('\0')
   .filter(Boolean)
 

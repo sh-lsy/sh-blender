@@ -37,62 +37,75 @@ retaining all 30 documents.
 - Python 3.10+ with OpenCV / NumPy / Pillow / SciPy **only** for the 26 helpers;
   the 13 core tools do not need it
 
-## Install (WorkBuddy desktop, no CLI required)
+## Install on the WorkBuddy desktop (no CLI)
 
-The desktop app has a **Plugins** page. It does not need a terminal command —
-adding a marketplace is done through the UI, and installation is one click.
+**Important about the UI.** The desktop sidebar entry is
+**专家 · 技能 · 连接器 → 技能**. That page is the *SkillHub skill market*: it
+lists installable single-skill cards (with a `+` button and an "已安装" tab).
+A **native plugin** (`.codebuddy-plugin/plugin.json` + `.mcp.json` + `bin/`)
+does **not** appear as a card there, and there is no "插件 → 市场" tab in the
+desktop UI. Native plugins are loaded by the desktop's embedded plugin runtime,
+whose state lives in `~/.workbuddy/plugins/`.
 
-**Option A — GitHub marketplace address (for other machines / sharing)**
-
-1. Open the **Plugins** page in WorkBuddy.
-2. Click **+** → add a third-party marketplace.
-3. Enter the repository address: `sh-lsy/sh-blender` (or the full
-   `https://github.com/sh-lsy/sh-blender`).
-4. Find `sh-blender` in that marketplace and click **Install**, then enable it.
-5. `/reload-plugins` (or restart the session) and confirm the MCP panel shows
-   `sh-blender` as connected.
-
-The repository carries its own `.codebuddy-plugin/marketplace.json`.
-
-**Option B — local `directory` marketplace (offline / development)**
-
-A directory marketplace is registered by adding an entry to
-`~/.workbuddy/plugins/known_marketplaces.json`:
-
-```json
-"sh-lsy-plugins": {
-  "manifestName": "sh-lsy-plugins",
-  "type": "directory",
-  "source": { "source": "directory", "path": "D:\\sy\\sh-blender-marketplace" },
-  "installLocation": "D:\\sy\\sh-blender-marketplace",
-  "description": "sh-lsy 维护的 WorkBuddy 插件（本机 directory 市场）",
-  "autoUpdate": false
-}
-```
-
-Build that directory from this repository (clean snapshot, no `.git`,
-`.plugin-data` or `node_modules`) with:
+So the reliable path is to register the plugin directly — one command, no UI
+clicking:
 
 ```bash
-node scripts/sync-local-marketplace.mjs
-# or: node scripts/sync-local-marketplace.mjs D:/some/other/market-root
+node scripts/desktop-plugin.mjs
 ```
 
-It writes `<market-root>/.codebuddy-plugin/marketplace.json` (entry
-`source: "./plugins/sh-blender"`, matching the official marketplace layout) and
-a clean plugin copy under `<market-root>/plugins/sh-blender/`. Then:
+What it does (idempotent, safe to re-run):
 
-1. **Restart WorkBuddy** so it re-reads `known_marketplaces.json`.
-2. **Plugins → Marketplaces** → `sh-lsy-plugins` → install `sh-blender`.
-3. `/reload-plugins`, confirm the `sh-blender` MCP server is green.
+1. Refreshes a clean local marketplace snapshot at
+   `../sh-blender-marketplace` (via `scripts/sync-local-marketplace.mjs`).
+2. Copies that snapshot into the versioned plugin cache
+   `~/.workbuddy/plugins/cache/sh-lsy-plugins/sh-blender/<version>/`.
+3. Writes the three pieces of state the desktop reads:
+   `known_marketplaces.json` (market), `installed_plugins.json` (install path +
+   version), and `~/.workbuddy/settings.json` → `enabledPlugins` (enabled).
+   All three are backed up as `*.bak-sh-blender` before the first change.
+4. Verifies the manifest, `.mcp.json`, MCP server, and `SKILL.md` all exist.
 
-Re-run the sync script after changing plugin code, and bump `version` in both
-`plugin.json` and `marketplace.json` so the desktop's versioned cache refreshes.
+Then **fully quit WorkBuddy and start it again** (closing the window is not
+enough — the runtime projects plugins at startup). Try `/reload-plugins` in
+chat first if you prefer not to restart.
+
+**Verify it worked** — not by looking for a card in the 技能 page, but by
+exercising it:
+
+- Ask the agent to call `blender_status` (it should report Blender 5.2.2 LTS).
+- Or run `/sh-blender:create-3d-model` with a modeling request.
+- `node scripts/desktop-plugin.mjs --status` shows the registration state.
+
+### Updating after you change the code
+
+```bash
+node scripts/desktop-plugin.mjs --bump patch     # 1.0.0 -> 1.0.1, then install
+node scripts/desktop-plugin.mjs --bump minor     # 1.0.0 -> 1.1.0
+node scripts/desktop-plugin.mjs                  # overwrite the current version (quick dev loop)
+```
+
+`--bump` updates `plugin.json`, `package.json` and `marketplace.json` together,
+rebuilds the snapshot, writes a **new versioned cache directory**, and points
+`installed_plugins.json` at it. The desktop keys its cache by version, so
+bumping is what guarantees a real reload. Without `--bump` the same version
+directory is overwritten — fine for a quick local iteration, but restart the
+app to pick it up.
+
+After any update: fully restart WorkBuddy, then re-check with
+`blender_status`. Best practice is to quit the desktop app before running the
+script, since it rewrites these JSON files on startup.
+
+### Sharing with other machines
+
+The GitHub repository `https://github.com/sh-lsy/sh-blender` carries its own
+`.codebuddy-plugin/marketplace.json`. If the desktop's **+ 添加技能** entry
+accepts a marketplace/repository address, use `sh-lsy/sh-blender`; otherwise
+clone the repo and run `node scripts/desktop-plugin.mjs` on that machine.
 
 > Installing a WorkBuddy plugin only copies files into a versioned cache. There
 > is no `npm install` step, which is why this plugin deliberately ships zero
-> third-party Node dependencies. The desktop app also copies the plugin out of
-> the market directory, so the market root may be a disposable snapshot.
+> third-party Node dependencies.
 
 ## Configuration
 

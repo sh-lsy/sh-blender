@@ -27,55 +27,62 @@
 - Blender 4.3+ 在 `PATH` 中，或通过 `blender_executable` 选项指定绝对路径
 - 仅 26 个 Helper 需要 Python 3.10+ 及 OpenCV / NumPy / Pillow / SciPy；13 个核心工具不需要
 
-## 安装（纯桌面端，无需 CLI）
+## 在 WorkBuddy 桌面端安装（无需 CLI）
 
-WorkBuddy 桌面端左侧有 **插件** 页，添加市场和安装都在界面里完成，不需要敲命令。
+**先说清楚界面**：桌面端侧边栏那个入口是 **「专家 · 技能 · 连接器 → 技能」**，
+里面是 **SkillHub 技能市场**（一张张带 `+` 的技能卡片，加「已安装」标签页，
+右上角「+ 添加技能」）。**原生插件不会在这里显示成卡片**，桌面端也**没有**
+「插件 → 市场」这种标签页。原生插件由桌面端内嵌的插件运行时加载，状态在
+`~/.workbuddy/plugins/` 里。
 
-**方式 A — GitHub 市场地址（推荐给其他机器 / 分享）**
-
-1. 打开 WorkBuddy 左侧 **插件** 页。
-2. 点击 **+** → 添加第三方插件市场。
-3. 输入仓库地址：`sh-lsy/sh-blender`（或完整地址 `https://github.com/sh-lsy/sh-blender`）。
-4. 在该市场里找到 `sh-blender`，点 **安装** 并启用。
-5. 执行 `/reload-plugins`（或重开会话），在 MCP 面板确认 `sh-blender` 绿灯。
-
-仓库自带 `.codebuddy-plugin/marketplace.json`。
-
-**方式 B — 本地 `directory` 市场（离线 / 开发联调）**
-
-在 `~/.workbuddy/plugins/known_marketplaces.json` 增加一条：
-
-```json
-"sh-lsy-plugins": {
-  "manifestName": "sh-lsy-plugins",
-  "type": "directory",
-  "source": { "source": "directory", "path": "D:\\sy\\sh-blender-marketplace" },
-  "installLocation": "D:\\sy\\sh-blender-marketplace",
-  "description": "sh-lsy 维护的 WorkBuddy 插件（本机 directory 市场）",
-  "autoUpdate": false
-}
-```
-
-用下面命令从本仓库生成该市场目录（干净快照，不含 `.git`、`.plugin-data`、
-`node_modules`）：
+所以最稳的做法是**直接写配置，不用点界面**，一条命令：
 
 ```bash
-node scripts/sync-local-marketplace.mjs
-# 或指定目录：node scripts/sync-local-marketplace.mjs D:/some/other/market-root
+node scripts/desktop-plugin.mjs
 ```
 
-脚本会生成 `<市场根>/.codebuddy-plugin/marketplace.json`（条目
-`source: "./plugins/sh-blender"`，与官方市场布局一致）以及
-`<市场根>/plugins/sh-blender/` 的插件副本。之后：
+脚本会（可重复运行）：
 
-1. **重启 WorkBuddy**，让它重新读取 `known_marketplaces.json`。
-2. **插件 → 市场** → `sh-lsy-plugins` → 安装 `sh-blender`。
-3. `/reload-plugins`，确认 `sh-blender` MCP 绿灯。
+1. 刷新干净的本机市场快照 `../sh-blender-marketplace`（调用
+   `scripts/sync-local-marketplace.mjs`）。
+2. 把快照复制到版本化缓存
+   `~/.workbuddy/plugins/cache/sh-lsy-plugins/sh-blender/<版本>/`。
+3. 写入桌面端读取的三处状态：`known_marketplaces.json`（市场）、
+   `installed_plugins.json`（安装路径与版本）、`~/.workbuddy/settings.json`
+   的 `enabledPlugins`（启用）。首次改动前都会备份成 `*.bak-sh-blender`。
+4. 校验清单、`.mcp.json`、MCP server、`SKILL.md` 是否齐全。
 
-改动插件代码后重跑同步脚本，并同步提升 `plugin.json` 与 `marketplace.json`
-的 `version`，否则桌面端版本化缓存不会刷新。
+然后**完全退出 WorkBuddy 再重新打开**（只关窗口不够，插件在启动时投影）。
+也可以先在对话里试 `/reload-plugins`。
 
-> WorkBuddy 安装插件只是把目录复制到版本化缓存，**不会执行 `npm install`**，所以本插件刻意保持零第三方 Node 依赖。桌面端会把插件从市场目录复制出去，因此市场目录可以视为一次性快照。
+**怎么确认装好了** —— 别去「技能」页找卡片，直接试能力：
+
+- 让 Agent 调用 `blender_status`（正常会返回 Blender 5.2.2 LTS）。
+- 或运行 `/sh-blender:create-3d-model` 提一个建模需求。
+- `node scripts/desktop-plugin.mjs --status` 查看注册状态。
+
+### 改了代码之后怎么更新
+
+```bash
+node scripts/desktop-plugin.mjs --bump patch     # 1.0.0 → 1.0.1 并安装
+node scripts/desktop-plugin.mjs --bump minor     # 1.0.0 → 1.1.0
+node scripts/desktop-plugin.mjs                  # 覆盖当前版本（快速联调）
+```
+
+`--bump` 会同步提升 `plugin.json`、`package.json`、`marketplace.json` 三处版本，
+重建快照，写入**新的版本化缓存目录**，并把 `installed_plugins.json` 指过去。
+桌面端按版本做缓存键，升版本才能保证真正重新加载；不带 `--bump` 是覆盖同版本
+目录，适合快速迭代，但同样要重启应用。更新后完全重启 WorkBuddy，再用
+`blender_status` 复验。建议运行脚本前先退出桌面端，因为它在启动时会重写这些 JSON。
+
+### 分享给其他机器
+
+GitHub 仓库 `https://github.com/sh-lsy/sh-blender` 自带
+`.codebuddy-plugin/marketplace.json`。若桌面端「+ 添加技能」支持仓库/市场地址，
+可填 `sh-lsy/sh-blender`；否则克隆仓库后在目标机器跑一次
+`node scripts/desktop-plugin.mjs`。
+
+> WorkBuddy 安装插件只是把目录复制到版本化缓存，**不会执行 `npm install`**，所以本插件刻意保持零第三方 Node 依赖。
 
 ## 配置
 

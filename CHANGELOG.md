@@ -4,6 +4,25 @@ All notable changes to `sh-blender` are documented here. This project starts
 at `1.0.0`; it is **not** a continuation of the upstream `dsh-blender` version
 line.
 
+## 1.0.2 - 2026-11-06
+
+Desktop installation and update workflow.
+
+- Corrected the documented desktop UI path: the sidebar is
+  **专家 · 技能 · 连接器 → 技能** (SkillHub skill market); a native plugin does
+  not appear as a card there and there is no "Plugins → Marketplaces" tab.
+- Added `scripts/desktop-plugin.mjs` — one command that registers the plugin
+  directly as installed + enabled by writing `known_marketplaces.json`,
+  `installed_plugins.json`, `settings.json → enabledPlugins`, and a versioned
+  cache directory. Supports `--status` and `--bump patch|minor|major`.
+- Updated `scripts/sync-local-marketplace.mjs` to include untracked-but-not-ignored
+  files, so unstaged edits reach the marketplace snapshot.
+- Rewrote both READMEs' installation and update sections; updated
+  `docs/VERIFICATION.md` with the real desktop mechanism and the correction.
+- Verified end to end with a real `--bump patch` run: versions advanced
+  together, a new `1.0.2` cache was created, and `installed_plugins.json` now
+  points at it.
+
 ## 1.0.0 - 2026-11-06
 
 Initial WorkBuddy-native release maintained by `sh-lsy`.

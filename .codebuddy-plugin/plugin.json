@@ -1,6 +1,6 @@
 {
   "name": "sh-blender",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "sh-lsy 维护的 Blender 3D 建模、重建、渲染、验证与导出插件（30 skills / 26 helpers / 13 tools）",
   "author": {
     "name": "sh-lsy",
@@ -9,7 +9,12 @@
   "homepage": "https://github.com/sh-lsy/sh-blender#readme",
   "repository": "https://github.com/sh-lsy/sh-blender",
   "license": "MIT",
-  "keywords": ["blender", "3d-modeling", "agent-skill", "mcp"],
+  "keywords": [
+    "blender",
+    "3d-modeling",
+    "agent-skill",
+    "mcp"
+  ],
   "category": "3D 建模",
   "mcpServers": "./.mcp.json",
   "userConfig": {
