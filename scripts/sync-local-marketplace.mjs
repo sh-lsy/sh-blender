@@ -16,7 +16,7 @@
 //   <market-root>/.codebuddy-plugin/marketplace.json   -> source ./plugins/sh-blender
 //   <market-root>/plugins/sh-blender/                  -> clean plugin snapshot
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, copyFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync, copyFileSync } from 'node:fs'
 import { dirname, join, resolve, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -50,14 +50,32 @@ const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: ROOT, encoding: '
 
 mkdirSync(join(MARKET_ROOT, '.codebuddy-plugin'), { recursive: true })
 mkdirSync(PLUGIN_DIR, { recursive: true })
-// Start from a clean snapshot so deleted source files do not linger.
-rmSync(PLUGIN_DIR, { recursive: true, force: true })
-mkdirSync(PLUGIN_DIR, { recursive: true })
 
+function listFiles(dir) {
+  const out = []
+  if (!existsSync(dir)) return out
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, entry.name)
+    if (entry.isDirectory()) out.push(...listFiles(p))
+    else out.push(p)
+  }
+  return out
+}
+
+// Incremental sync: overwrite tracked files, then remove only files that are
+// no longer tracked. Deleting one file at a time avoids bulk-delete guards.
 for (const file of tracked) {
   const target = join(PLUGIN_DIR, file)
   mkdirSync(dirname(target), { recursive: true })
   copyFileSync(join(ROOT, file), target)
+}
+const desired = new Set(tracked.map((file) => resolve(PLUGIN_DIR, file)))
+let pruned = 0
+for (const existing of listFiles(PLUGIN_DIR)) {
+  if (!desired.has(resolve(existing))) {
+    rmSync(existing, { force: true })
+    pruned += 1
+  }
 }
 writeFileSync(join(MARKET_ROOT, '.codebuddy-plugin/marketplace.json'), LOCAL_MARKET_MANIFEST)
 
@@ -68,6 +86,6 @@ if (!existsSync(join(resolved, '.codebuddy-plugin/plugin.json'))) {
   throw new Error(`marketplace source does not resolve to a plugin: ${entry.source}`)
 }
 
-console.log(`synced ${tracked.length} tracked files -> ${relative(ROOT, PLUGIN_DIR)}`)
+console.log(`synced ${tracked.length} tracked files -> ${relative(ROOT, PLUGIN_DIR)} (pruned ${pruned} stale files)`)
 console.log(`marketplace manifest: ${join(MARKET_ROOT, '.codebuddy-plugin/marketplace.json')} (version ${version})`)
 console.log('Restart the WorkBuddy desktop app to pick up the refreshed marketplace.')
