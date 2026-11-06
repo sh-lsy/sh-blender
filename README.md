@@ -37,29 +37,62 @@ retaining all 30 documents.
 - Python 3.10+ with OpenCV / NumPy / Pillow / SciPy **only** for the 26 helpers;
   the 13 core tools do not need it
 
-## Install
+## Install (WorkBuddy desktop, no CLI required)
 
-**Local / development**
+The desktop app has a **Plugins** page. It does not need a terminal command —
+adding a marketplace is done through the UI, and installation is one click.
 
-1. Clone this repository.
-2. In WorkBuddy open the **Plugins** page, click **+**, and add the marketplace
-   address — either the local directory (e.g. `D:\sy\sh-blender`) or its
-   `.codebuddy-plugin/marketplace.json`.
-3. Install `sh-blender` from that marketplace and enable it.
-4. `/reload-plugins`, then check the MCP panel shows `sh-blender` as connected.
+**Option A — GitHub marketplace address (for other machines / sharing)**
 
-Equivalent CLI form (where available):
-`/plugin marketplace add sh-lsy/sh-blender` →
-`/plugin install sh-blender@sh-lsy-plugins`.
+1. Open the **Plugins** page in WorkBuddy.
+2. Click **+** → add a third-party marketplace.
+3. Enter the repository address: `sh-lsy/sh-blender` (or the full
+   `https://github.com/sh-lsy/sh-blender`).
+4. Find `sh-blender` in that marketplace and click **Install**, then enable it.
+5. `/reload-plugins` (or restart the session) and confirm the MCP panel shows
+   `sh-blender` as connected.
 
-**From GitHub**
+The repository carries its own `.codebuddy-plugin/marketplace.json`.
 
-Add `https://github.com/sh-lsy/sh-blender` as the marketplace address. The
-repository carries its own `.codebuddy-plugin/marketplace.json`.
+**Option B — local `directory` marketplace (offline / development)**
+
+A directory marketplace is registered by adding an entry to
+`~/.workbuddy/plugins/known_marketplaces.json`:
+
+```json
+"sh-lsy-plugins": {
+  "manifestName": "sh-lsy-plugins",
+  "type": "directory",
+  "source": { "source": "directory", "path": "D:\\sy\\sh-blender-marketplace" },
+  "installLocation": "D:\\sy\\sh-blender-marketplace",
+  "description": "sh-lsy 维护的 WorkBuddy 插件（本机 directory 市场）",
+  "autoUpdate": false
+}
+```
+
+Build that directory from this repository (clean snapshot, no `.git`,
+`.plugin-data` or `node_modules`) with:
+
+```bash
+node scripts/sync-local-marketplace.mjs
+# or: node scripts/sync-local-marketplace.mjs D:/some/other/market-root
+```
+
+It writes `<market-root>/.codebuddy-plugin/marketplace.json` (entry
+`source: "./plugins/sh-blender"`, matching the official marketplace layout) and
+a clean plugin copy under `<market-root>/plugins/sh-blender/`. Then:
+
+1. **Restart WorkBuddy** so it re-reads `known_marketplaces.json`.
+2. **Plugins → Marketplaces** → `sh-lsy-plugins` → install `sh-blender`.
+3. `/reload-plugins`, confirm the `sh-blender` MCP server is green.
+
+Re-run the sync script after changing plugin code, and bump `version` in both
+`plugin.json` and `marketplace.json` so the desktop's versioned cache refreshes.
 
 > Installing a WorkBuddy plugin only copies files into a versioned cache. There
 > is no `npm install` step, which is why this plugin deliberately ships zero
-> third-party Node dependencies.
+> third-party Node dependencies. The desktop app also copies the plugin out of
+> the market directory, so the market root may be a disposable snapshot.
 
 ## Configuration
 

@@ -27,24 +27,55 @@
 - Blender 4.3+ 在 `PATH` 中，或通过 `blender_executable` 选项指定绝对路径
 - 仅 26 个 Helper 需要 Python 3.10+ 及 OpenCV / NumPy / Pillow / SciPy；13 个核心工具不需要
 
-## 安装
+## 安装（纯桌面端，无需 CLI）
 
-**本地 / 开发**
+WorkBuddy 桌面端左侧有 **插件** 页，添加市场和安装都在界面里完成，不需要敲命令。
 
-1. 克隆本仓库。
-2. 在 WorkBuddy 左侧 **插件** 页点击 **+**，输入插件市场地址：本地目录（例如 `D:\sy\sh-blender`）或该目录下的 `.codebuddy-plugin/marketplace.json`。
-3. 从该市场安装并启用 `sh-blender`。
-4. 执行 `/reload-plugins`，在 MCP 面板确认 `sh-blender` 显示绿灯。
+**方式 A — GitHub 市场地址（推荐给其他机器 / 分享）**
 
-等价命令（若可用）：`/plugin marketplace add sh-lsy/sh-blender` →
-`/plugin install sh-blender@sh-lsy-plugins`。
+1. 打开 WorkBuddy 左侧 **插件** 页。
+2. 点击 **+** → 添加第三方插件市场。
+3. 输入仓库地址：`sh-lsy/sh-blender`（或完整地址 `https://github.com/sh-lsy/sh-blender`）。
+4. 在该市场里找到 `sh-blender`，点 **安装** 并启用。
+5. 执行 `/reload-plugins`（或重开会话），在 MCP 面板确认 `sh-blender` 绿灯。
 
-**从 GitHub 安装**
+仓库自带 `.codebuddy-plugin/marketplace.json`。
 
-把 `https://github.com/sh-lsy/sh-blender` 作为市场地址添加即可；仓库自带
-`.codebuddy-plugin/marketplace.json`。
+**方式 B — 本地 `directory` 市场（离线 / 开发联调）**
 
-> WorkBuddy 安装插件只是把目录复制到版本化缓存，**不会执行 `npm install`**，所以本插件刻意保持零第三方 Node 依赖。
+在 `~/.workbuddy/plugins/known_marketplaces.json` 增加一条：
+
+```json
+"sh-lsy-plugins": {
+  "manifestName": "sh-lsy-plugins",
+  "type": "directory",
+  "source": { "source": "directory", "path": "D:\\sy\\sh-blender-marketplace" },
+  "installLocation": "D:\\sy\\sh-blender-marketplace",
+  "description": "sh-lsy 维护的 WorkBuddy 插件（本机 directory 市场）",
+  "autoUpdate": false
+}
+```
+
+用下面命令从本仓库生成该市场目录（干净快照，不含 `.git`、`.plugin-data`、
+`node_modules`）：
+
+```bash
+node scripts/sync-local-marketplace.mjs
+# 或指定目录：node scripts/sync-local-marketplace.mjs D:/some/other/market-root
+```
+
+脚本会生成 `<市场根>/.codebuddy-plugin/marketplace.json`（条目
+`source: "./plugins/sh-blender"`，与官方市场布局一致）以及
+`<市场根>/plugins/sh-blender/` 的插件副本。之后：
+
+1. **重启 WorkBuddy**，让它重新读取 `known_marketplaces.json`。
+2. **插件 → 市场** → `sh-lsy-plugins` → 安装 `sh-blender`。
+3. `/reload-plugins`，确认 `sh-blender` MCP 绿灯。
+
+改动插件代码后重跑同步脚本，并同步提升 `plugin.json` 与 `marketplace.json`
+的 `version`，否则桌面端版本化缓存不会刷新。
+
+> WorkBuddy 安装插件只是把目录复制到版本化缓存，**不会执行 `npm install`**，所以本插件刻意保持零第三方 Node 依赖。桌面端会把插件从市场目录复制出去，因此市场目录可以视为一次性快照。
 
 ## 配置
 
