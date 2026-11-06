@@ -33,7 +33,22 @@ results are inherited or claimed here.
 | V10 | Security | **PASS** | V2 asserts `../` traversal and symlink escape are rejected; V5 asserts traversal rejection. Runtime always passes `--disable-autoexec`, uses one fresh Blender process per call, denies overwrite by default, and removes temporary payload/result directories |
 | V11 | Compliance | **PASS** | Root `LICENSE` (© 2026 SH), `skills/.../LICENSE` (© 2026 CheshireJCat), `UPSTREAM_LICENSE` (© 2026 RobLe3), `NOTICE`, and `THIRD_PARTY_NOTICES.md` with the three MIT texts in full. No claim of inheriting upstream verification results |
 | V12 | Install / uninstall / version refresh | **PENDING (manual)** | Requires desktop-side install → uninstall → reinstall and a version bump check |
-| V13 | Push / tag | See git log | `main` + `v1.0.0` |
+| V13 | Push / tag | **PARTIAL** | Local commit `b48bbb8` and local tag `v1.0.0` created. `git push` was blocked by the environment: the HTTPS proxy returned `502 Bad Gateway`, Git Credential Manager could not supply a username (terminal prompts disabled), and the sandbox blocked `wmic.exe` on the program blacklist. The push must be completed by the user or after the network/credential policy is adjusted |
+
+## Outstanding blocker
+
+Pushing to `https://github.com/sh-lsy/sh-blender` did not complete during this
+run. The local repository is fully committed (`b48bbb8`) and tagged (`v1.0.0`),
+but the remote still only contains the original `Initial commit`. Re-run from a
+shell with working GitHub credentials and an unblocked proxy:
+
+```bash
+git push -u origin main
+git push origin v1.0.0
+```
+
+Do not publish the marketplace address or invite installs until V9 (desktop
+integration) has been confirmed manually.
 
 ## Known limitations
 
