@@ -1,6 +1,6 @@
 {
   "name": "sh-blender",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "private": true,
   "type": "module",
   "description": "WorkBuddy native Blender 3D production plugin maintained by sh-lsy",

@@ -264,6 +264,10 @@ def _scene_bounds(object_names: list[str] | None = None) -> tuple[mathutils.Vect
         and (not requested or obj.name in requested)
     ]
     if not objects:
+        if requested:
+            missing = sorted(name for name in requested if name not in bpy.context.scene.objects)
+            detail = f"missing objects: {', '.join(missing)}" if missing else "all matched objects are hidden or not renderable"
+            raise ValueError(f"No visible renderable objects matched object_names ({detail})")
         raise ValueError("No visible renderable objects were found for preview")
     corners = [obj.matrix_world @ mathutils.Vector(corner) for obj in objects for corner in obj.bound_box]
     minimum = mathutils.Vector(tuple(min(point[index] for point in corners) for index in range(3)))
@@ -486,6 +490,15 @@ def _export(payload: dict[str, Any]) -> dict[str, Any]:
     output.parent.mkdir(parents=True, exist_ok=True)
     suffix = output.suffix.lower()
     selected = bool(payload.get("selection_only", False))
+
+    if selected:
+        # With an empty selection Blender still writes a file — a 132-byte GLB
+        # with zero meshes — and the tool would report that as a successful
+        # export. Refuse instead of handing back an empty deliverable.
+        if not any(obj.select_get() for obj in bpy.context.view_layer.objects):
+            raise ValueError(
+                "selection_only=true but no object is selected in the scene; select the objects to export or set selection_only=false"
+            )
 
     if suffix in {".glb", ".gltf"}:
         bpy.ops.export_scene.gltf(

@@ -4,6 +4,22 @@ All notable changes to `sh-blender` are documented here. This project starts
 at `1.0.0`; it is **not** a continuation of the upstream `dsh-blender` version
 line.
 
+## 1.0.7 - 2026-11-06
+
+Edge-case hardening from a second tool sweep.
+
+- `blender_export` with `selection_only: true` and an empty selection reported
+  success while writing a 132-byte GLB containing zero meshes — Blender writes an
+  empty file instead of failing. It now raises a clear error. Verified against a
+  file with one selected object (9 124 B subset export); with a normal scene the
+  flag behaves as before (a scene whose 12 meshes are all selected exports all
+  12, which is correct).
+- `blender_preview` with `object_names` that do not exist now reports which names
+  are missing, instead of the generic "No visible renderable objects were found".
+- Sweep coverage recorded in `docs/VERIFICATION.md`: obj/stl/ply/usd/gltf
+  re-import, helper preconditions, argument validation, camera and object errors,
+  frame-range behaviour.
+
 ## 1.0.6 - 2026-11-06
 
 Silhouette helpers no longer report a false perfect match on opaque renders.

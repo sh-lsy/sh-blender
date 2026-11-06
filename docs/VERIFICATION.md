@@ -233,3 +233,26 @@ is not an LTS, so 5.2.3 is the right upgrade target.
 Silhouette comparison is only meaningful on cut-out images: render with
 `blender_render`/`blender_preview` `transparent: true` (alpha then drives the
 mask, e.g. bbox `[202, 82, 236, 476]` for the pagoda front view).
+
+## Edge-case sweep (1.0.7)
+
+Second pass aimed at inputs a model would realistically try, not just the happy
+path. Run on Blender 5.2.3.
+
+| Case | Result |
+| --- | --- |
+| Re-import obj / stl / ply / usd / gltf | PASS — 12 / 1 / 1 / 16 / 12 objects (stl+ply are single-mesh formats by design) |
+| `blender_export` `selection_only` with one object selected | PASS — 9 124 B subset, not the full 2.2 MB scene |
+| `blender_export` `selection_only` with an empty selection | **Fixed in 1.0.7** — used to succeed with a 132-byte GLB / 0 meshes; now errors |
+| `blender_render` with an unknown camera | PASS — `Camera "NO-SUCH-CAM" was not found` |
+| `blender_preview` with unknown `object_names` | Improved in 1.0.7 — names the missing objects |
+| `blender_validate_scene` with an unknown object name | PASS — `missing-objects` + `no-mesh-objects` |
+| `blender_helper_run` missing required argument | PASS — `arguments.render is required` |
+| `blender_helper_run` with an unknown argument | PASS — `Unknown helper arguments: bogus` |
+| `blender_helper_run` blender-runtime helper without `blend_path` | PASS — explicit error |
+| `blender_scene_info` `max_objects: 0` | PASS — range error |
+| `blender_python` with a blank script | PASS — `script must not be empty` |
+| `blender_render` with `frame` outside the scene range | Expected behaviour, no change — Blender allows frames beyond `frame_end` and actions may have keys there |
+
+Not covered by this sweep: GPU/render-engine differences, very large scenes
+(10⁶+ polygons), animation/NLA editing, and the 3 maintenance helpers.
