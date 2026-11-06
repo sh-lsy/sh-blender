@@ -134,7 +134,7 @@ console.log(`cache: ${CACHE} (${listFiles(CACHE).length} files)`)
 // 3. Register as installed + enabled.
 const installedPath = join(PLUGINS, 'installed_plugins.json')
 const knownPath = join(PLUGINS, 'known_marketplaces.json')
-for (const p of [installedPath, knownPath, SETTINGS]) backup(p)
+for (const p of [installedPath, knownPath]) backup(p)
 
 const installed = readJson(installedPath)
 const previous = installed.plugins[KEY]?.[0]
@@ -160,10 +160,18 @@ known[MARKET] = {
 }
 writeJson(knownPath, known)
 
+// Only touch settings.json when the plugin is not already enabled. This file
+// is user-owned; rewriting it on every run is unnecessary and may be blocked.
 const settings = readJson(SETTINGS)
 settings.enabledPlugins = settings.enabledPlugins || {}
-settings.enabledPlugins[KEY] = true
-writeJson(SETTINGS, settings)
+if (settings.enabledPlugins[KEY] !== true) {
+  backup(SETTINGS)
+  settings.enabledPlugins[KEY] = true
+  writeJson(SETTINGS, settings)
+  console.log(`enabled: ${KEY} = true`)
+} else {
+  console.log(`already enabled: ${KEY}`)
+}
 
 // 4. Verify.
 const check = {
