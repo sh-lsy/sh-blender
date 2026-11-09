@@ -25,6 +25,7 @@
     "test": "node --test test/*.test.js",
     "test:blender": "RUN_BLENDER_TESTS=1 node --test test/blender.integration.test.js",
     "test:helpers": "RUN_HELPER_TESTS=1 node --test test/helpers.integration.test.js",
+    "test:animation": "RUN_ANIMATION_TESTS=1 node --test test/animation.integration.test.js",
     "setup:analysis": "node scripts/setup-analysis.js",
     "mcp": "node mcp/server.mjs"
   }

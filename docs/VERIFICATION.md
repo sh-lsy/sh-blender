@@ -256,3 +256,50 @@ path. Run on Blender 5.2.3.
 
 Not covered by this sweep: GPU/render-engine differences, very large scenes
 (10⁶+ polygons), animation/NLA editing, and the 3 maintenance helpers.
+
+## Animation chain verification (1.0.7)
+
+The animation path needs real keyframes: a static scene cannot exercise
+`blender_render_frames`, the contact-sheet helper, or the `animation` profile.
+`test/animation.integration.test.js` builds the data and asserts the chain.
+
+```bash
+RUN_ANIMATION_TESTS=1 node --test test/animation.integration.test.js
+```
+
+**The fixture** — one mesh, two independent channels, 48 frames:
+
+- rotation Z: 1 → 0°, 24 → 180°, 48 → 360° (Bezier)
+- location Z: 1 → 1.2, 24 → 2.1, 48 → 1.2 (bob)
+- camera + area light, `frame_start=1`, `frame_end=48`
+- a second static file with the same geometry but no keyframes, as the control
+
+**What is asserted** (each step gates the next):
+
+| # | Assertion | Why it matters |
+| --- | --- | --- |
+| 1 | `blender_python` reports 2 F-curves, action `SH-SpinnerAction`, range `[1,48]` | the fixture is really animated, not just posed |
+| 2 | `blender_object_info` exposes `animation.action` | QA has something to gate on |
+| 3 | `validate_scene` profile `animation` passes | animated scene is accepted |
+| 4 | `blender_render_frames` returns 5 frames, names match `frame-\d{6}\.png`, all non-empty | frame numbering/padding contract |
+| 5 | **all 5 frame files have distinct SHA-1** | catches "renders the same frame five times" |
+| 6 | `animation-contact-sheet` writes the sheet + report with one `frame_diff` entry per adjacent pair | helper received and compared the real sequence |
+| 7 | GLB export → `validate_export` profile `animation` passes, no `no-object-animation` | animation survives glTF round-trip |
+| 8 | the static control **fails** with exactly `no-object-animation` | proves the gate is not always-green |
+
+Observed on Blender 5.2.3: 2 F-curves, 5 frames (227 501 B total), sheet 75 678 B,
+`frame_diff` mean RGB deltas 5.67 / 6.81 / 6.37 / 5.94, no warnings; whole test
+27 s.
+
+**Blender 5 API note.** `Action.fcurves` was removed; keyframes live at
+`action.layers[].strips[].channelbags[].fcurves`. The test uses an
+`iter_fcurves()` shim that tries the legacy attribute first, matching the
+guidance already in `references/blender-5-compat.md` and
+`modules/blender-animation/MODULE.md`. Plugin runtime code never touches
+`fcurves`, so only recipes and tests need the shim.
+
+Sample output stays in the git-ignored `artifacts/anim-audit/` (`.blend`, 5 PNG
+frames, `contact-sheet.png`, `contact-sheet.json`).
+
+**Not covered:** NLA track blending, shape keys and drivers, material/node
+animation, armature skinning, and long sequences (the test caps at 5 frames).

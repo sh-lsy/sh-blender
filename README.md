@@ -215,6 +215,7 @@ node scripts/validate-plugin.js
 node --test test/*.test.js
 RUN_BLENDER_TESTS=1 node --test test/blender.integration.test.js
 RUN_HELPER_TESTS=1 node --test test/helpers.integration.test.js
+RUN_ANIMATION_TESTS=1 node --test test/animation.integration.test.js
 ```
 
 Local verification results are recorded in `docs/VERIFICATION.md`. They are
